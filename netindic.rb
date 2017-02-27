@@ -13,7 +13,6 @@ require "gtk3"
 require "ruby-libappindicator"
 require "netdiag/window"
 
-
 class Netindic
 
   def initialize
@@ -34,7 +33,7 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("/home/davidb/devel/netdiag/static")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
     @ai.set_icon("help_64")
 
   end
@@ -132,7 +131,7 @@ class Netindic
   end
 
   def run_tests
-    @ai.set_icon_theme_path("/home/davidb/devel/netdiag/static")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
     if !@local.diagnose
       puts "error 1"
       @ai.set_icon("error_64")
