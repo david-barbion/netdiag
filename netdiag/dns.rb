@@ -16,10 +16,10 @@ module Netdiag
     end
   
     def resolve_ipv4(name)
-      @dns.getresource(name, Resolv::DNS::Resource::IN::AAAA)
+      @dns.getresource(name, Resolv::DNS::Resource::IN::A)
     end
     def resolve_ipv6(name)
-      @dns.getresource(name, Resolv::DNS::Resource::IN::A)
+      @dns.getresource(name, Resolv::DNS::Resource::IN::AAAA)
     end
   
   end
