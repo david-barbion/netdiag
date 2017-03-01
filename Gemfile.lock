@@ -1,0 +1,38 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    atk (3.1.1)
+      glib2 (= 3.1.1)
+    cairo (1.15.5)
+      pkg-config (>= 1.1.5)
+    gdk_pixbuf2 (3.1.1)
+      gio2 (= 3.1.1)
+    gio2 (3.1.1)
+      glib2 (= 3.1.1)
+      gobject-introspection (= 3.1.1)
+    glib2 (3.1.1)
+      pkg-config
+    gobject-introspection (3.1.1)
+      glib2 (= 3.1.1)
+    gtk2 (3.1.1)
+      atk (= 3.1.1)
+      gdk_pixbuf2 (= 3.1.1)
+      pango (= 3.1.1)
+    net-ping (2.0.1)
+    pango (3.1.1)
+      cairo (>= 1.14.0)
+      glib2 (= 3.1.1)
+    pkg-config (1.1.7)
+    ruby-libappindicator (0.1.5)
+      gtk2
+      pkg-config
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  net-ping
+  ruby-libappindicator
+
+BUNDLED WITH
+   1.12.5
