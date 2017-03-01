@@ -9,7 +9,7 @@ require "netdiag/gateway"
 require "netdiag/dns"
 require "netdiag/internet"
 require "rubygems"
-require "gtk3"
+require "gtk2"
 require "ruby-libappindicator"
 require "netdiag/window"
 

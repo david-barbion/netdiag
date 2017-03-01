@@ -15,11 +15,11 @@
 #window.show
 #
 #Gtk.main
-require "gtk3"
+require "gtk2"
 class NetdiagWindow < Gtk::Window
 
     def initialize
-        super
+        Gtk.init
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false
@@ -33,20 +33,20 @@ class NetdiagWindow < Gtk::Window
     end
 
     def init_ui
-        Gtk.init
-        override_background_color :normal, Gdk::RGBA::new(0.8, 0.8, 0.8, 1)
+#        override_background_color :normal, Gdk::RGBA::new(0.8, 0.8, 0.8, 1)
+#	modify_bg(Gtk::STATE_NORMAL, Gdk::Color.parse("red"))
 
         begin
-            local_pb = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/local.png")
-            gateway_pb = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/gateway.png")
-            internet_pb = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/internet.png")
-            conn_pb = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
-            conn_pb_alt = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
+            local_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/local.png")
+            gateway_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/gateway.png")
+            internet_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/internet.png")
+            conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
+            conn_pb_alt = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
             conn_pb_alt = conn_pb_alt.saturate_and_pixelate(5.5, true)
-            no_conn_pb = Gdk::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/no_connection.png")
-            small_local_pb = local_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_gateway_pb = gateway_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_internet_pb = internet_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
+            no_conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/no_connection.png")
+            small_local_pb = local_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
+            small_gateway_pb = gateway_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
+            small_internet_pb = internet_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
         rescue IOError => e
             puts e
             puts "cannot load images"
@@ -54,20 +54,20 @@ class NetdiagWindow < Gtk::Window
         end
 
         #image1 = Gtk::Image.new :pixbuf => gateway_pb
-        image1 = Gtk::Image.new :pixbuf => small_local_pb
-        image2 = Gtk::Image.new :pixbuf => small_gateway_pb
-        image3 = Gtk::Image.new :pixbuf => small_internet_pb
-        @lan_ok = Gtk::Image.new :pixbuf => conn_pb
-        @lan_ok_alt = Gtk::Image.new :pixbuf => conn_pb_alt
-        @wan_ok = Gtk::Image.new :pixbuf => conn_pb
-        @wan_ok_alt = Gtk::Image.new :pixbuf => conn_pb_alt
-        @lan_ko = Gtk::Image.new :pixbuf => no_conn_pb
-        @wan_ko = Gtk::Image.new :pixbuf => no_conn_pb
+        image1 = Gtk::Image.new(small_local_pb)
+        image2 = Gtk::Image.new small_gateway_pb
+        image3 = Gtk::Image.new small_internet_pb
+        @lan_ok = Gtk::Image.new conn_pb
+        @lan_ok_alt = Gtk::Image.new conn_pb_alt
+        @wan_ok = Gtk::Image.new conn_pb
+        @wan_ok_alt = Gtk::Image.new  conn_pb_alt
+        @lan_ko = Gtk::Image.new no_conn_pb
+        @wan_ko = Gtk::Image.new no_conn_pb
 
-        hb = Gtk::Box.new(:horizontal)
-        @vb1 = Gtk::Box.new(:vertical)
-        @vb2 = Gtk::Box.new(:vertical)
-        @vb3 = Gtk::Box.new(:vertical)
+        hb = Gtk::HBox.new
+        @vb1 = Gtk::VBox.new
+        @vb2 = Gtk::VBox.new
+        @vb3 = Gtk::VBox.new
         @label_local_diag = Gtk::Label.new.set_markup("<span foreground=\"#000000\">#{@local_diag}</span>")
         @label_gw_diag  = Gtk::Label.new.set_markup("<span foreground=\"#000000\">#{@gw_diag}</span>")
         @label_internet_diag = Gtk::Label.new.set_markup("<span foreground=\"#000000\">#{@internet_diag}</span>")
