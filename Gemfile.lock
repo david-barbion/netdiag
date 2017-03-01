@@ -5,6 +5,7 @@ GEM
       glib2 (= 3.1.1)
     cairo (1.15.5)
       pkg-config (>= 1.1.5)
+    ffi (1.9.17)
     gdk_pixbuf2 (3.1.1)
       gio2 (= 3.1.1)
     gio2 (3.1.1)
@@ -18,6 +19,8 @@ GEM
       atk (= 3.1.1)
       gdk_pixbuf2 (= 3.1.1)
       pango (= 3.1.1)
+    libnotify (0.9.3)
+      ffi (>= 1.0.11)
     net-ping (2.0.1)
     pango (3.1.1)
       cairo (>= 1.14.0)
@@ -31,6 +34,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  libnotify
   net-ping
   ruby-libappindicator
 

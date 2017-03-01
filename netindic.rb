@@ -12,6 +12,13 @@ require "rubygems"
 require "gtk2"
 require "ruby-libappindicator"
 require "netdiag/window"
+require "libnotify"
+
+STATE_OK=0
+STATE_ELOCAL=1
+STATE_EGATEWAY=2
+STATE_EDNS=3
+STATE_EINTERNET=4
 
 class Netindic
 
@@ -36,7 +43,7 @@ class Netindic
     @ai.set_status(AppIndicator::Status::ACTIVE)
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
     @ai.set_icon("help_64")
-
+    @last_state=STATE_OK
   end
 
   def update_ntw_info
@@ -130,20 +137,40 @@ class Netindic
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
     if !@local.diagnose
       puts "error 1"
+      if @last_state != STATE_ELOCAL
+        Libnotify.show(:summary => "No routable address", :body => "No IP address on any interface, check network cable or wifi", :timeout => 2.5)
+        @last_state = STATE_ELOCAL
+      end
       @ai.set_icon("error_64")
     else 
       if @gateway.diagnose < 50
+        if @last_state != STATE_EGATEWAY
+          Libnotify.show(:summary => "Gateway unreachable", :body => "The default gateway is ureachable, maybe a temporary network failure", :timeout => 2.5)
+          @last_state = STATE_EGATEWAY
+        end
         puts "error 2"
         @ai.set_icon("help_64")
       else
         if !@dns.diagnose
+          if @last_state != STATE_EDNS
+            Libnotify.show(:summary => "DNS failure", :body => "The local resolver can't reach the DNS, or DNS can't resolve internet names", :timeout => 2.5)
+            @last_state = STATE_EDNS
+          end
           puts "error 3"
           @ai.set_icon("warning_64")
         else
           if @internet.diagnose < 50
+            if @last_state != STATE_EINTERNET
+              Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
+              @last_state = STATE_EINTERNET
+            end
             puts "error 4"
             @ai.set_icon("error_64")
           else
+            if @last_state != STATE_OK
+              Libnotify.show(:summary => "Full network connectivity", :timeout => 2.5)
+              @last_state = STATE_OK
+            end
             @ai.set_icon("checkmark_64")
           end
         end
