@@ -38,13 +38,18 @@ class Netindic
 
   end
 
-  def run
+  def update_ntw_info
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new(@local.default_gateways)
     @dns = Netdiag::DNS.new
     @internet = Netdiag::Internet.new
+  end
+
+  def run
+    self.update_ntw_info
     self.run_tests
     Thread.new do loop do
+      self.update_ntw_info
       self.run_tests
       sleep(20)
     end end
