@@ -1,3 +1,4 @@
+require 'pp'
 module Netdiag
   class Local
   
@@ -54,43 +55,51 @@ module Netdiag
   
     def get_default_gateway_list(routes=@routes)
       default_gateways = Array.new
-      default_gateways.push(routes[:ipv4]["default"][:via]) if defined?(routes[:ipv4]["default"][:via])
-      default_gateways.push(routes[:ipv6]["default"][:via]) if defined?(routes[:ipv6]["default"][:via])
+      routes[:ipv4].each do |route|
+        default_gateways.push(route["default"][:via]) if defined?(route["default"][:via]) and !route["default"][:via].nil?
+      end
+      routes[:ipv6].each do |route|
+        default_gateways.push(route["default"][:via]) if defined?(route["default"][:via]) and !route["default"][:via].nil?
+      end
       return default_gateways
     end
   
     def parse_routing_table
       routes = Hash.new
-      routes[:ipv4] = Hash.new
+      routes[:ipv4] = Array.new
       f = IO.popen("ip -4 route show table main").each do |line|
         prefix = line.split.first
-        routes[:ipv4][prefix] = Hash.new
-        routes[:ipv4][prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
-        routes[:ipv4][prefix][:scope] = $1 if line =~ /\s+scope\s+([^\s]+)/
-        routes[:ipv4][prefix][:metric] = $1 if line =~ /\s+metric\s+([^\s]+)/
-        routes[:ipv4][prefix][:proto] = $1 if line =~ /\s+proto\s+([^\s]+)/
-        routes[:ipv4][prefix][:src] = $1 if line =~ /\s+src\s+([^\s]+)/
-        routes[:ipv4][prefix][:via] = $1 if line =~ /\s+via\s+([^\s]+)/
-        routes[:ipv4][prefix][:weight] = $1 if line =~ /\s+weight\s+([^\s]+)/
-        routes[:ipv4][prefix][:table] = $1 if line =~ /\s+table\s+([^\s]+)/
-        routes[:ipv4][prefix][:error] = $1 if line =~ /\s+error\s+([^\s]+)/
+	route = Hash.new
+        route[prefix] = Hash.new
+        route[prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
+        route[prefix][:scope] = $1 if line =~ /\s+scope\s+([^\s]+)/
+        route[prefix][:metric] = $1 if line =~ /\s+metric\s+([^\s]+)/
+        route[prefix][:proto] = $1 if line =~ /\s+proto\s+([^\s]+)/
+        route[prefix][:src] = $1 if line =~ /\s+src\s+([^\s]+)/
+        route[prefix][:via] = $1 if line =~ /\s+via\s+([^\s]+)/
+        route[prefix][:weight] = $1 if line =~ /\s+weight\s+([^\s]+)/
+        route[prefix][:table] = $1 if line =~ /\s+table\s+([^\s]+)/
+        route[prefix][:error] = $1 if line =~ /\s+error\s+([^\s]+)/
+        routes[:ipv4].push(route)
       end
       f.close
-      routes[:ipv6] = Hash.new
+      routes[:ipv6] = Array.new
       f = IO.popen("ip -6 route show table main").each do |line|
         prefix = line.split.first
-        routes[:ipv6][prefix] = Hash.new
-        routes[:ipv6][prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
-        routes[:ipv6][prefix][:scope] = $1 if line =~ /\s+scope\s+([^\s]+)/
-        routes[:ipv6][prefix][:metric] = $1 if line =~ /\s+metric\s+([^\s]+)/
-        routes[:ipv6][prefix][:proto] = $1 if line =~ /\s+proto\s+([^\s]+)/
-        routes[:ipv6][prefix][:src] = $1 if line =~ /\s+src\s+([^\s]+)/
-        routes[:ipv6][prefix][:weight] = $1 if line =~ /\s+weight\s+([^\s]+)/
-        routes[:ipv6][prefix][:table] = $1 if line =~ /\s+table\s+([^\s]+)/
-        routes[:ipv6][prefix][:error] = $1 if line =~ /\s+error\s+([^\s]+)/
-        routes[:ipv6][prefix][:via] = $1 if line =~ /\s+via\s+([^\s]+)/
-        routes[:ipv6][prefix][:via] = "#{routes[:ipv6][prefix][:via]}%#{routes[:ipv6][prefix][:dev]}" if
-          routes[:ipv6][prefix][:via] =~ /^f(e|c)/
+        route = Hash.new
+        route[prefix] = Hash.new
+        route[prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
+        route[prefix][:scope] = $1 if line =~ /\s+scope\s+([^\s]+)/
+        route[prefix][:metric] = $1 if line =~ /\s+metric\s+([^\s]+)/
+        route[prefix][:proto] = $1 if line =~ /\s+proto\s+([^\s]+)/
+        route[prefix][:src] = $1 if line =~ /\s+src\s+([^\s]+)/
+        route[prefix][:weight] = $1 if line =~ /\s+weight\s+([^\s]+)/
+        route[prefix][:table] = $1 if line =~ /\s+table\s+([^\s]+)/
+        route[prefix][:error] = $1 if line =~ /\s+error\s+([^\s]+)/
+        route[prefix][:via] = $1 if line =~ /\s+via\s+([^\s]+)/
+        route[prefix][:via] = "#{route[prefix][:via]}%#{route[prefix][:dev]}" if
+          route[prefix][:via] =~ /^f(e|c)/
+        routes[:ipv6].push(route)
       end
       f.close
       routes
