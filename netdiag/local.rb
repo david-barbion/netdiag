@@ -62,7 +62,7 @@ module Netdiag
     def parse_routing_table
       routes = Hash.new
       routes[:ipv4] = Hash.new
-      IO.popen("ip -4 route show table main").each do |line|
+      f = IO.popen("ip -4 route show table main").each do |line|
         prefix = line.split.first
         routes[:ipv4][prefix] = Hash.new
         routes[:ipv4][prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
@@ -75,8 +75,9 @@ module Netdiag
         routes[:ipv4][prefix][:table] = $1 if line =~ /\s+table\s+([^\s]+)/
         routes[:ipv4][prefix][:error] = $1 if line =~ /\s+error\s+([^\s]+)/
       end
+      f.close
       routes[:ipv6] = Hash.new
-      IO.popen("ip -6 route show table main").each do |line|
+      f = IO.popen("ip -6 route show table main").each do |line|
         prefix = line.split.first
         routes[:ipv6][prefix] = Hash.new
         routes[:ipv6][prefix][:dev] = $1 if line =~ /\s+dev\s+([^\s]+)/
@@ -91,6 +92,7 @@ module Netdiag
         routes[:ipv6][prefix][:via] = "#{routes[:ipv6][prefix][:via]}%#{routes[:ipv6][prefix][:dev]}" if
           routes[:ipv6][prefix][:via] =~ /^f(e|c)/
       end
+      f.close
       routes
     end
   
