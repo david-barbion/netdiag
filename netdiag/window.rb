@@ -20,6 +20,7 @@ class NetdiagWindow < Gtk::Window
 
     def initialize
         Gtk.init
+	super
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false
@@ -34,7 +35,7 @@ class NetdiagWindow < Gtk::Window
 
     def init_ui
 #        override_background_color :normal, Gdk::RGBA::new(0.8, 0.8, 0.8, 1)
-#	modify_bg(Gtk::STATE_NORMAL, Gdk::Color.parse("red"))
+	modify_bg(Gtk::STATE_NORMAL, Gdk::Color.new(52428, 52428, 52428))
 
         begin
             local_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/local.png")
@@ -53,8 +54,7 @@ class NetdiagWindow < Gtk::Window
             exit
         end
 
-        #image1 = Gtk::Image.new :pixbuf => gateway_pb
-        image1 = Gtk::Image.new(small_local_pb)
+        image1 = Gtk::Image.new small_local_pb
         image2 = Gtk::Image.new small_gateway_pb
         image3 = Gtk::Image.new small_internet_pb
         @lan_ok = Gtk::Image.new conn_pb
@@ -74,7 +74,9 @@ class NetdiagWindow < Gtk::Window
         @eb_lan = Gtk::EventBox.new()
         @eb_wan = Gtk::EventBox.new()
         @eb_lan.add(@lan_ok)
+	@eb_lan.modify_bg(Gtk::STATE_NORMAL, Gdk::Color.new(52428, 52428, 52428))
         @eb_wan.add(@wan_ok)
+	@eb_wan.modify_bg(Gtk::STATE_NORMAL, Gdk::Color.new(52428, 52428, 52428))
 
         @vb1.pack_start(image1)
         @vb1.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Local</span>'))
@@ -98,7 +100,7 @@ class NetdiagWindow < Gtk::Window
         end
 
         set_default_size 544, 280
-        window_position = :center
+        self.window_position = :center
     end
 
     def close_window
