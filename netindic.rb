@@ -21,6 +21,7 @@ class Netindic
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new "Diagnose"
     @indicator_diagnose.signal_connect "activate" do
+      self.update_ntw_info
       self.show_diag
     end
     @indicator_diagnose.show
@@ -57,17 +58,7 @@ class Netindic
   end
   
   def show_diag
-    puts "open window"
     @window = NetdiagWindow.new
-    @window.open_window
-    GLib::Timeout.add(1000) do
-      @window.change_lan_icon
-      true
-    end
-    GLib::Timeout.add(1000) do
-      @window.change_wan_icon
-      true
-    end
     # Test local interface LAN
     local_diag_info = 'Network interfaces informations:'
     if (@local.diagnose)
@@ -163,10 +154,3 @@ end
 
 netindic = Netindic.new
 netindic.run
-
-
-#pp local.local_interfaces
-#pp local.routed_addresses
-#pp local.routes
-#pp local.default_gateways
-#puts Socket::IFF_UP

@@ -101,6 +101,7 @@ class NetdiagWindow < Gtk::Window
 
         set_default_size 544, 280
         self.window_position = :center
+	self.open_window
     end
 
     def close_window
@@ -109,6 +110,14 @@ class NetdiagWindow < Gtk::Window
 
     def open_window
         self.show_all
+        GLib::Timeout.add(1000) do
+          self.change_lan_icon
+          true
+        end
+        GLib::Timeout.add(1000) do
+          self.change_wan_icon
+          true
+        end
     end
 
     # change lan icon
