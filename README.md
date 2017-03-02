@@ -12,3 +12,6 @@ Please note that this app uses ruby GTK2, since ruby-libappindicator relies on G
 # Usage
 
 Just run `netindic.rb`
+
+# Credits
+* Theme / iconic : [Open Iconic](https://github.com/iconic/open-iconic) - MIT 

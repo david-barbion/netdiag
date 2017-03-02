@@ -1,5 +1,5 @@
 require 'net/http'
-
+require_relative '../netdiag-config'
 module Netdiag
   class Internet
     def initialize(url='http://httpbin.org/get')

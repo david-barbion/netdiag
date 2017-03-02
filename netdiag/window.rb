@@ -1,26 +1,14 @@
 #!/usr/bin/env ruby
 
-#Gtk.init
-
-#window = Gtk::Window.new
-#gateway_img = Gtk::Image.new(:pixbuf => gateway_pb)
-##newi = Gtk::ImageMenuItem.new(:stock_id => Gtk::Stock::NEW, :accel_group => agr)
-#fixed = Gtk::Fixed.new
-#fixed.put gateway_img, 20, 20
-#add fixed
-##button = Gtk::Button.new(:label => 'Bonjour tout le monde')
-##window.add(button)
-#
-##button.show
-#window.show
-#
-#Gtk.main
 require "gtk2"
+require_relative "../netdiag-config"
 class NetdiagWindow < Gtk::Window
 
     def initialize
         Gtk.init
 	super
+        @config = NetdiagConfig.new
+        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.getTheme}"
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false
@@ -38,13 +26,13 @@ class NetdiagWindow < Gtk::Window
 	modify_bg(Gtk::STATE_NORMAL, Gdk::Color.new(52428, 52428, 52428))
 
         begin
-            local_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/local.png")
-            gateway_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/gateway.png")
-            internet_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/internet.png")
-            conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
-            conn_pb_alt = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/connection.png")
+            local_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/local.png")
+            gateway_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/gateway.png")
+            internet_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/internet.png")
+            conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
+            conn_pb_alt = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
             conn_pb_alt = conn_pb_alt.saturate_and_pixelate(5.5, true)
-            no_conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{File.dirname(File.expand_path(__FILE__))}/../static/no_connection.png")
+            no_conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/no_connection.png")
             small_local_pb = local_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
             small_gateway_pb = gateway_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
             small_internet_pb = internet_pb.scale(128, 128, GdkPixbuf::InterpType::BILINEAR)
