@@ -1,4 +1,5 @@
 require 'net/http'
+require 'json'
 
 module Netdiag
   class Internet
@@ -32,9 +33,11 @@ module Netdiag
         http.read_timeout = 1
         http.open_timeout = 1
         res = http.request_get(uri.path)
-        return true if res.is_a?(Net::HTTPSuccess)
+        ret = JSON.parse(res.body)
+        return true if ret["headers"]["Host"] = "httpbin.org"
         false
-      rescue
+      rescue Exception => e
+        puts e.message
         false
       end
     end
