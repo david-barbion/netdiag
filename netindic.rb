@@ -14,6 +14,7 @@ require "netdiag/portal"
 require "appindicator.so"
 require "netdiag/window"
 require "libnotify"
+require "netdiag-config"
 
 STATE_OK=0
 STATE_ELOCAL=1
@@ -26,6 +27,7 @@ class Netindic
 
   def initialize
     Gtk.init
+    @config = Netdiag::Config.new()
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new "Diagnose"
@@ -43,16 +45,17 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
     @ai.set_icon("help_64")
     @last_state=STATE_OK
   end
 
   def update_ntw_info
+    @config = Netdiag::Config.new
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new(@local.default_gateways)
     @dns = Netdiag::DNS.new
-    @internet = Netdiag::Internet.new
+    @internet = Netdiag::Internet.new(@config.get_test_url)
   end
 
   def run
@@ -136,7 +139,6 @@ class Netindic
   end
 
   def run_tests
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static")
     if !@local.diagnose
       puts "error 1"
       if @last_state != STATE_ELOCAL
@@ -155,7 +157,7 @@ class Netindic
       else
         if !@dns.diagnose
           if @last_state != STATE_EDNS
-            Libnotify.show(:summary => "DNS failure", :body => "The local resolver can't reach the DNS, or DNS can't resolve internet names", :timeout => 2.5)
+            Libnotify.show(:summary => "DNS failure", :body => "The local resolve internet names", :timeout => 2.5)
             @last_state = STATE_EDNS
           end
           puts "error 3"
