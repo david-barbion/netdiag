@@ -21,7 +21,7 @@ require "netdiag/internet"
 # end test
 
 #Gtk.init
-window = RubyApp.new
+window = Netdiag::Window.new
 
     GLib::Timeout.add(1000) do
       window.change_lan_icon

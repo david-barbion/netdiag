@@ -19,6 +19,7 @@ GEM
       atk (= 3.1.1)
       gdk_pixbuf2 (= 3.1.1)
       pango (= 3.1.1)
+    json (2.0.1)
     libnotify (0.9.3)
       ffi (>= 1.0.11)
     net-ping (2.0.1)
@@ -34,6 +35,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  json
   libnotify
   net-ping
   ruby-libappindicator

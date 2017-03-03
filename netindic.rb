@@ -9,8 +9,8 @@ require "netdiag/gateway"
 require "netdiag/dns"
 require "netdiag/internet"
 require "rubygems"
-require "gtk2"
-require "ruby-libappindicator"
+require "gtk3"
+require "appindicator.so"
 require "netdiag/window"
 require "libnotify"
 require "netdiag-config"
@@ -68,7 +68,7 @@ class Netindic
   end
   
   def show_diag
-    @window = NetdiagWindow.new
+    @window = Netdiag::Window.new
     # Test local interface LAN
     local_diag_info = 'Network interfaces informations:'
     if (@local.diagnose)
