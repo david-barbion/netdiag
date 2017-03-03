@@ -25,7 +25,7 @@ class Netindic
 
   def initialize
     Gtk.init
-    @config = NetdiagConfig.new()
+    @config = Netdiag::Config.new()
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new "Diagnose"
@@ -43,17 +43,17 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.getTheme}")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
     @ai.set_icon("help_64")
     @last_state=STATE_OK
   end
 
   def update_ntw_info
-    @config = NetdiagConfig.new
+    @config = Netdiag::Config.new
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new(@local.default_gateways)
     @dns = Netdiag::DNS.new
-    @internet = Netdiag::Internet.new(@config.getTestUrl)
+    @internet = Netdiag::Internet.new(@config.get_test_url)
   end
 
   def run

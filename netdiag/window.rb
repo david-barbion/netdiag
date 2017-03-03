@@ -7,8 +7,8 @@ class NetdiagWindow < Gtk::Window
     def initialize
         Gtk.init
 	super
-        @config = NetdiagConfig.new
-        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.getTheme}"
+        @config = Netdiag::Config.new
+        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.get_theme}"
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false
