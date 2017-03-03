@@ -10,6 +10,7 @@ require "netdiag/dns"
 require "netdiag/internet"
 require "rubygems"
 require "gtk3"
+require "netdiag/portal"
 require "appindicator.so"
 require "netdiag/window"
 require "libnotify"
@@ -19,6 +20,7 @@ STATE_ELOCAL=1
 STATE_EGATEWAY=2
 STATE_EDNS=3
 STATE_EINTERNET=4
+STATE_ECAPTIVE=5
 
 class Netindic
 
@@ -160,12 +162,20 @@ class Netindic
           @ai.set_icon("warning_64")
         else
           if @internet.diagnose < 50
-            if @last_state != STATE_EINTERNET
-              Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
-              @last_state = STATE_EINTERNET
+            if @internet.is_captive?
+              if @last_state != STATE_ECAPTIVE
+                Libnotify.show(:summary => "Blocked by a captive portal", :body => "A captive portal blocks access to Internet", :timeout => 2.5)
+                @last_state = STATE_ECAPTIVE
+              end
+              @ai.set_icon("forbidden_64")
+            else
+              if @last_state != STATE_EINTERNET
+                Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
+                @last_state = STATE_EINTERNET
+              end
+              puts "error 4"
+              @ai.set_icon("error_64")
             end
-            puts "error 4"
-            @ai.set_icon("error_64")
           else
             if @last_state != STATE_OK
               Libnotify.show(:summary => "Full network connectivity", :timeout => 2.5)
