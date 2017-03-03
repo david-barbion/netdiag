@@ -1,4 +1,5 @@
 require 'net/http'
+require_relative '../netdiag-config'
 require 'json'
 
 module Netdiag

@@ -12,3 +12,6 @@ This app is now compatible with GTK3.
 # Usage
 
 Just run `netindic.rb`
+
+# Credits
+* Theme / iconic : [Open Iconic](https://github.com/iconic/open-iconic) - MIT 
