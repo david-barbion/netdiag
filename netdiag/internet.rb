@@ -6,6 +6,7 @@ module Netdiag
     def initialize(url='http://httpbin.org/get')
       @url = url
       @count = 5
+      @captive = false
     end
   
     def diagnose
@@ -22,6 +23,10 @@ module Netdiag
       @quality
     end
   
+    def is_captive?
+      @captive
+    end
+
     def raise_diag
       raise "Host not reachable" if !@quality
     end
@@ -35,6 +40,7 @@ module Netdiag
         res = http.request_get(uri.path)
         ret = JSON.parse(res.body)
         return true if ret["headers"]["Host"] = "httpbin.org"
+        @captive = true if ret["headers"]["Host"] != "httpbin.org"
         false
       rescue Exception => e
         puts e.message
