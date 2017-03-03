@@ -3,11 +3,11 @@
 Before using netdiag, some librairies must be installed. Example for Ubuntu 16+:
 
 ```bash
-sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler
+sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler ruby-gt3
 bundle install
 ```
 
-Please note that this app uses ruby GTK2, since ruby-libappindicator relies on GTK2.
+This app is now compatible with GTK3.
 
 # Usage
 
