@@ -6,7 +6,6 @@ module Netdiag
   class Window < Gtk::Window
 
     def initialize
-        Gtk.init
 	super
         @config = Netdiag::Config.new
         @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.get_theme}"
@@ -49,6 +48,7 @@ module Netdiag
         @lan_ok_alt = Gtk::Image.new :pixbuf => conn_pb_alt
         @wan_ok = Gtk::Image.new :pixbuf => conn_pb
         @wan_ok_alt = Gtk::Image.new :pixbuf => conn_pb_alt
+
         @lan_ko = Gtk::Image.new :pixbuf => no_conn_pb
         @wan_ko = Gtk::Image.new :pixbuf => no_conn_pb
 
@@ -64,20 +64,20 @@ module Netdiag
         @eb_lan.add(@lan_ok)
         @eb_wan.add(@wan_ok)
 
-        @vb1.pack_start(image1)
-        @vb1.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Local</span>'))
-        @vb1.pack_start(@label_local_diag)
-        hb.pack_start(@vb1)
-        hb.pack_start(@eb_lan)
-        @vb2.pack_start(image2)
-        @vb2.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Gateway</span>'))
-        @vb2.pack_start(@label_gw_diag)
-        hb.pack_start(@vb2)
-        hb.pack_start(@eb_wan)
-        @vb3.pack_start(image3)
-        @vb3.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Internet</span>'))
-        @vb3.pack_start(@label_internet_diag)
-        hb.pack_start(@vb3)
+        @vb1.pack_start(image1,:expand => true)
+        @vb1.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Local</span>'),:expand => true)
+        @vb1.pack_start(@label_local_diag,:expand => true)
+        hb.pack_start(@vb1,:expand => true)
+        hb.pack_start(@eb_lan,:expand => true)
+        @vb2.pack_start(image2,:expand => true)
+        @vb2.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Gateway</span>',:expand => true))
+        @vb2.pack_start(@label_gw_diag,:expand => true)
+        hb.pack_start(@vb2,:expand => true)
+        hb.pack_start(@eb_wan,:expand => true)
+        @vb3.pack_start(image3,:expand => true)
+        @vb3.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Internet</span>'),:expand => true)
+        @vb3.pack_start(@label_internet_diag,:expand => true)
+        hb.pack_start(@vb3,:expand => true)
         add hb
 
         set_title "Network diag"
