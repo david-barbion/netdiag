@@ -4,17 +4,17 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'socket'
 require 'net/ping'
 require 'resolv'
-require "netdiag/local"
-require "netdiag/gateway"
-require "netdiag/dns"
-require "netdiag/internet"
-require "rubygems"
-require "gtk3"
-require "netdiag/portal"
-require "appindicator.so"
-require "netdiag/window"
-require "libnotify"
-require "netdiag-config"
+require 'netdiag/local'
+require 'netdiag/gateway'
+require 'netdiag/dns'
+require 'netdiag/internet'
+require 'rubygems'
+require 'gtk3'
+require 'netdiag/portal'
+require 'appindicator.so'
+require 'netdiag/window'
+require 'libnotify'
+require 'netdiag-config'
 
 STATE_OK=0
 STATE_ELOCAL=1
@@ -26,18 +26,17 @@ STATE_ECAPTIVE=5
 class Netindic
 
   def initialize
-    Gtk.init
     @config = Netdiag::Config.new()
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
-    @indicator_diagnose = Gtk::MenuItem.new "Diagnose"
+    @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"
     @indicator_diagnose.signal_connect "activate" do
       self.update_ntw_info
       self.show_diag
     end
     @indicator_diagnose.show
     @indicator_menu.append @indicator_diagnose
-    @indicator_exit     = Gtk::MenuItem.new "Exit"
+    @indicator_exit     = Gtk::MenuItem.new :label => "Exit"
     @indicator_exit.signal_connect "activate" do
       Gtk.main_quit
     end
@@ -48,6 +47,8 @@ class Netindic
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
     @ai.set_icon("help_64")
     @last_state=STATE_OK
+
+    @captive_window_authenticator = nil
   end
 
   def update_ntw_info
@@ -138,52 +139,80 @@ class Netindic
     
   end
 
-  def run_tests
-    if !@local.diagnose
-      puts "error 1"
+  def set_state_and_notify(state)
+    case state
+    when STATE_ELOCAL
       if @last_state != STATE_ELOCAL
         Libnotify.show(:summary => "No routable address", :body => "No IP address on any interface, check network cable or wifi", :timeout => 2.5)
         @last_state = STATE_ELOCAL
+        puts "error 1"
+        @ai.set_icon("error_64")
       end
-      @ai.set_icon("error_64")
-    else 
-      if @gateway.diagnose < 50
-        if @last_state != STATE_EGATEWAY
-          Libnotify.show(:summary => "Gateway unreachable", :body => "The default gateway is ureachable, maybe a temporary network failure", :timeout => 2.5)
-          @last_state = STATE_EGATEWAY
-        end
+    when STATE_EGATEWAY
+      if @last_state != STATE_EGATEWAY
+        Libnotify.show(:summary => "Gateway unreachable", :body => "The default gateway is ureachable, maybe a temporary network failure", :timeout => 2.5)
+        @last_state = STATE_EGATEWAY
         puts "error 2"
         @ai.set_icon("help_64")
+      end
+    when STATE_EDNS
+      if @last_state != STATE_EDNS
+        Libnotify.show(:summary => "DNS failure", :body => "The local resolve internet names", :timeout => 2.5)
+        @last_state = STATE_EDNS
+        puts "error 3"
+        @ai.set_icon("warning_64")
+      end
+    when STATE_EINTERNET
+      if @last_state != STATE_EINTERNET
+        Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
+        @last_state = STATE_EINTERNET
+        puts "error 4"
+        @ai.set_icon("error_64")
+      end
+    when STATE_ECAPTIVE
+      if @last_state != STATE_ECAPTIVE
+        Libnotify.show(:summary => "Blocked by a captive portal", :body => "A captive portal blocks access to Internet", :timeout => 2.5)
+        @last_state = STATE_ECAPTIVE
+        puts "error 5"
+        @ai.set_icon("forbidden_64")
+        @portal = Portal.new
+      end
+    when STATE_OK
+      if @last_state != STATE_OK
+        Libnotify.show(:summary => "Full network connectivity", :timeout => 2.5)
+        @last_state = STATE_OK
+        puts "no error"
+        @ai.set_icon("checkmark_64")
+      end
+    end
+  end
+
+  class Portal < Netdiag::Portal
+    def initialize
+      super
+      open_portal_authenticator_window if is_closed?
+    end
+  end
+
+  def run_tests
+    if !@local.diagnose
+      self.set_state_and_notify(STATE_ELOCAL)
+    else 
+      if @gateway.diagnose < 50
+        self.set_state_and_notify(STATE_EGATEWAY)
       else
         if !@dns.diagnose
-          if @last_state != STATE_EDNS
-            Libnotify.show(:summary => "DNS failure", :body => "The local resolve internet names", :timeout => 2.5)
-            @last_state = STATE_EDNS
-          end
-          puts "error 3"
-          @ai.set_icon("warning_64")
+          self.set_state_and_notify(STATE_EDNS)
         else
           if @internet.diagnose < 50
-            if @internet.is_captive?
-              if @last_state != STATE_ECAPTIVE
-                Libnotify.show(:summary => "Blocked by a captive portal", :body => "A captive portal blocks access to Internet", :timeout => 2.5)
-                @last_state = STATE_ECAPTIVE
-              end
-              @ai.set_icon("forbidden_64")
-            else
-              if @last_state != STATE_EINTERNET
-                Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
-                @last_state = STATE_EINTERNET
-              end
-              puts "error 4"
-              @ai.set_icon("error_64")
-            end
+            self.set_state_and_notify(STATE_EINTERNET)
           else
-            if @last_state != STATE_OK
-              Libnotify.show(:summary => "Full network connectivity", :timeout => 2.5)
-              @last_state = STATE_OK
+            if @internet.is_captive?
+#            if !@internet.is_captive? # TEST
+              self.set_state_and_notify(STATE_ECAPTIVE)
+            else
+              self.set_state_and_notify(STATE_OK)
             end
-            @ai.set_icon("checkmark_64")
           end
         end
       end

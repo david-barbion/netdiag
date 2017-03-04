@@ -1,13 +1,14 @@
 require 'net/http'
 require_relative '../netdiag-config'
 require 'json'
+require 'pp'
 
 module Netdiag
   class Internet
     def initialize(url='http://httpbin.org/get')
       @url = url
       @count = 5
-      @captive = false
+      @ret = Hash.new
     end
   
     def diagnose
@@ -25,7 +26,10 @@ module Netdiag
     end
   
     def is_captive?
-      @captive
+      if @body["headers"]["Host"] != "httpbin.org"
+        true
+      end
+      false
     end
 
     def raise_diag
@@ -39,9 +43,10 @@ module Netdiag
         http.read_timeout = 1
         http.open_timeout = 1
         res = http.request_get(uri.path)
-        ret = JSON.parse(res.body)
-        return true if ret["headers"]["Host"] = "httpbin.org"
-        @captive = true if ret["headers"]["Host"] != "httpbin.org"
+        if res.is_a?(Net::HTTPSuccess)
+          @body = JSON.parse(res.body)
+        end
+        return true if @body["headers"]["Host"] = "httpbin.org"
         false
       rescue Exception => e
         puts e.message
