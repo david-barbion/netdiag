@@ -60,6 +60,7 @@ module Netdiag
       end
       routes[:ipv6].each do |route|
         default_gateways.push(route["default"][:via]) if defined?(route["default"][:via]) and !route["default"][:via].nil?
+        default_gateways.push(route["2000::/3"][:via]) if defined?(route["2000::/3"][:via]) and !route["2000::/3"][:via].nil?
       end
       return default_gateways
     end
