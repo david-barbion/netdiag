@@ -17,6 +17,10 @@ module Netdiag
       return true
     end
   
+    def error
+      @error
+    end
+
     def resolve_ipv4(name)
       @dns.getresource(name, Resolv::DNS::Resource::IN::A)
     end

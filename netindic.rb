@@ -71,70 +71,72 @@ class Netindic
   
   def show_diag
     @window = Netdiag::Window.new
-    # Test local interface LAN
-    local_diag_info = 'Network interfaces informations:'
-    if (@local.diagnose)
-      status = "Ok"
-    else
-      status = "Error"
-    end
-    @window.local_diag="Status: #{status}"
-    # full text informations
-    @local.local_interfaces.each do |int,data|
-      local_diag_info.concat("\n#{int}")
-      data.each do |data_addr|
-        local_diag_info.concat("\n #{data_addr[:address]}/#{data_addr[:netmask]}")
+    Thread.new {
+      # Test local interface LAN
+      local_diag_info = 'Network interfaces informations:'
+      if (@local.diagnose)
+        status = "Ok"
+      else
+        status = "Error"
       end
-    end
-    @window.local_diag_info=local_diag_info
-    #puts local_diag_info
-    #local.raise_diag
-
-    # Test Gateway reachability
-    gw_diag_percent = @gateway.diagnose
-    puts "La qualité d'accès à la/les gateway(s): #{gw_diag_percent}"
-    @window.gw_diag=("Quality: #{gw_diag_percent}%")
-    # stop lan blinking
-    if gw_diag_percent >= 50
-      @window.lan_status=(true)
-    else
-      @window.lan_status=(false)
-    end
-    if @local.default_gateways.length > 1
-      gw_diag_info = 'Gateways addresses:'
-    else
-      gw_diag_info = 'Gateway address:'
-    end
-    @local.default_gateways.each do |gw|
-      gw_diag_info.concat("\n#{gw}")
-    end
-    @window.gw_diag_info=gw_diag_info
-    #gw.raise_diag
-
-
-    # test internet access
-    internet_dns_diag = @dns.diagnose
-    internet_net_diag = @internet.diagnose
-
-    if internet_dns_diag
-      internet_diag="DNS working"
-      internet_diag_info = "DNS is working"
-    else
-      internet_diag="DNS not working"
-      internet_diag_info = "DNS is not working"
-    end
-    if internet_net_diag > 50
-      internet_diag.concat("\nQuality: #{internet_net_diag}%")
-      internet_diag_info.concat("\nInternet reachable")
-      @window.wan_status=true
-    else
-      internet_diag.concat("\nQuality: #{internet_net_diag}%")
-      internet_diag_info.concat("\nInternet not reachable")
-      @window.wan_status=false
-    end
-    puts "DNS: #{internet_diag}"
-    @window.internet_diag = internet_diag
-    @window.internet_diag_info = internet_diag_info
+      @window.local_diag="Status: #{status}"
+      # full text informations
+      @local.local_interfaces.each do |int,data|
+        local_diag_info.concat("\n#{int}")
+        data.each do |data_addr|
+          local_diag_info.concat("\n #{data_addr[:address]}/#{data_addr[:netmask]}")
+        end
+      end
+      @window.local_diag_info=local_diag_info
+      #puts local_diag_info
+      #local.raise_diag
+  
+      # Test Gateway reachability
+      gw_diag_percent = @gateway.diagnose
+      puts "La qualité d'accès à la/les gateway(s): #{gw_diag_percent}"
+      @window.gw_diag=("Quality: #{gw_diag_percent.round(2)}%")
+      # stop lan blinking
+      if gw_diag_percent >= 50
+        @window.lan_status=(true)
+      else
+        @window.lan_status=(false)
+      end
+      if @local.default_gateways.length > 1
+        gw_diag_info = 'Gateways addresses:'
+      else
+        gw_diag_info = 'Gateway address:'
+      end
+      @local.default_gateways.each do |gw|
+        gw_diag_info.concat("\n#{gw}")
+      end
+      @window.gw_diag_info=gw_diag_info
+      #gw.raise_diag
+  
+  
+      # test internet access
+      internet_dns_diag = @dns.diagnose
+      internet_net_diag = @internet.diagnose
+  
+      if internet_dns_diag
+        internet_diag="DNS working"
+        internet_diag_info = "DNS is working"
+      else
+        internet_diag="DNS not working properly"
+        internet_diag_info = "DNS is not working"
+      end
+      if internet_net_diag > 50
+        internet_diag.concat("\nQuality: #{internet_net_diag}%")
+        internet_diag_info.concat("\nInternet reachable")
+        @window.wan_status=true
+      else
+        internet_diag.concat("\nQuality: #{internet_net_diag}%")
+        internet_diag_info.concat("\nInternet not reachable")
+        @window.wan_status=false
+      end
+      puts "DNS: #{internet_diag}"
+      @window.internet_diag = internet_diag
+      @window.internet_diag_info = internet_diag_info
+    }
     
   end
 
@@ -149,14 +151,14 @@ class Netindic
       end
     when STATE_EGATEWAY
       if @last_state != STATE_EGATEWAY
-        Libnotify.show(:summary => "Gateway unreachable", :body => "The default gateway is ureachable, maybe a temporary network failure", :timeout => 2.5)
+        Libnotify.show(:summary => @gateway.status, :body => "Maybe a temporary network failure\n#{@gateway.message}", :timeout => 2.5)
         @last_state = STATE_EGATEWAY
         puts "error 2"
         @ai.set_icon("help_64")
       end
     when STATE_EDNS
       if @last_state != STATE_EDNS
-        Libnotify.show(:summary => "DNS failure", :body => "The local resolve internet names", :timeout => 2.5)
+        Libnotify.show(:summary => "DNS failure", :body => "The local resolver can't resolve internet names.\nError was #{@dns.error}.", :timeout => 2.5)
         @last_state = STATE_EDNS
         puts "error 3"
         @ai.set_icon("warning_64")
