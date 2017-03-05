@@ -97,12 +97,18 @@ module Netdiag
     def open_window
         self.show_all
         GLib::Timeout.add(1000) do
-          self.change_lan_icon
-          true
+          if !self.change_lan_icon
+            false
+          else
+            true
+          end
         end
         GLib::Timeout.add(1000) do
-          self.change_wan_icon
-          true
+          if !self.change_wan_icon
+            false
+          else
+            true
+          end
         end
     end
 
@@ -120,6 +126,7 @@ module Netdiag
     end
 
     def change_lan_icon
+      return false if @eb_lan.destroyed?
       return if @lan_diag_end
       if @lan_status.nil? # lan status undefined
         self.alternate_lan_icon
@@ -153,6 +160,7 @@ module Netdiag
       end
     end
     def change_wan_icon
+      return false if @eb_wan.destroyed?
       return if @wan_diag_end
       if @wan_status.nil? # wan status undefined
         self.alternate_wan_icon

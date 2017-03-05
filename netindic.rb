@@ -24,13 +24,18 @@ STATE_ECAPTIVE=5
 
 class Netindic
 
+  class Portal < Netdiag::Portal
+    def initialize
+      super
+    end
+  end
+
   def initialize
     @config = Netdiag::Config.new()
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"
     @indicator_diagnose.signal_connect "activate" do
-      self.update_ntw_info
       self.show_diag
     end
     @indicator_diagnose.show
@@ -45,24 +50,20 @@ class Netindic
     @ai.set_status(AppIndicator::Status::ACTIVE)
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
     @ai.set_icon("help_64")
+
     @last_state=STATE_OK
 
     @captive_window_authenticator = nil
-  end
-
-  def update_ntw_info
-    @config = Netdiag::Config.new
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new(@local.default_gateways)
     @dns = Netdiag::DNS.new
     @internet = Netdiag::Internet.new(@config.get_test_url)
+
+    @portal_authenticator = Portal.new
   end
 
   def run
-    self.update_ntw_info
-    self.run_tests
     Thread.new do loop do
-      self.update_ntw_info
       self.run_tests
       sleep(20)
     end end
@@ -119,7 +120,7 @@ class Netindic
   
       if internet_dns_diag
         internet_diag="DNS working"
-        internet_diag_info = "DNS is working"
+        internet_diag_info = @dns.status
       else
         internet_diag="DNS not working properly"
         internet_diag_info = "DNS is not working"
@@ -165,7 +166,7 @@ class Netindic
       end
     when STATE_EINTERNET
       if @last_state != STATE_EINTERNET
-        Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, border gateway or cable/ADSL modem", :timeout => 2.5)
+        Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, gateways or cable/ADSL modem", :timeout => 2.5)
         @last_state = STATE_EINTERNET
         puts "error 4"
         @ai.set_icon("error_64")
@@ -176,7 +177,6 @@ class Netindic
         @last_state = STATE_ECAPTIVE
         puts "error 5"
         @ai.set_icon("forbidden_64")
-        @portal = Portal.new
       end
     when STATE_OK
       if @last_state != STATE_OK
@@ -185,13 +185,6 @@ class Netindic
         puts "no error"
         @ai.set_icon("checkmark_64")
       end
-    end
-  end
-
-  class Portal < Netdiag::Portal
-    def initialize
-      super
-      open_portal_authenticator_window if is_closed?
     end
   end
 
@@ -211,6 +204,7 @@ class Netindic
             if @internet.is_captive?
 #            if !@internet.is_captive? # TEST
               self.set_state_and_notify(STATE_ECAPTIVE)
+              @portal_authenticator.open_portal_authenticator_window
             else
               self.set_state_and_notify(STATE_OK)
             end

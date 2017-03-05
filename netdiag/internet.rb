@@ -26,10 +26,18 @@ module Netdiag
     end
   
     def is_captive?
-      if @body["headers"]["Host"] != "httpbin.org"
+      begin
+        res = self.get_uri
+        if res.is_a?(Net::HTTPSuccess)
+pp res
+          body = JSON.parse(res.body)
+          return false if body["headers"]["Host"] == "httpbin.org"
+        end
+        raise "Get response code #{res}"
+      rescue Exception => e
+        puts "#{e.message}"
         true
       end
-      false
     end
 
     def raise_diag
@@ -40,14 +48,10 @@ module Netdiag
       begin
         uri = URI(@url)
         http = Net::HTTP.new(uri.host,uri.port)
-        http.read_timeout = 1
-        http.open_timeout = 1
+        http.read_timeout = 3
+        http.open_timeout = 3
         res = http.request_get(uri.path)
-        if res.is_a?(Net::HTTPSuccess)
-          @body = JSON.parse(res.body)
-        end
-        return true if @body["headers"]["Host"] = "httpbin.org"
-        false
+        return res
       rescue Exception => e
         puts e.message
         false

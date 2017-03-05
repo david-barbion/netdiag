@@ -4,19 +4,32 @@ module Netdiag
     def initialize
       @dns = Resolv::DNS.new
       @config = Netdiag::Config.new
+      @count = 0
     end
     def diagnose
+      @error = String.new
+      count = 0
       begin
         self.resolve_ipv4(@config.get_test_dns)
-        self.resolve_ipv6(@config.get_test_dns)
+        count += 1
       rescue Exception => e
-        @error = e.message
-        return false
+        @error << "#{e.message}\n"
       end
-      @error = nil
+      begin
+        self.resolve_ipv6(@config.get_test_dns)
+        count += 1
+      rescue Exception => e
+        @error << "#{e.message}\n"
+      end
+      @count = count
+      return false if count==0
       return true
     end
   
+    def status
+      return "#{@count} DNS server(s) working" 
+    end
+
     def error
       @error
     end
