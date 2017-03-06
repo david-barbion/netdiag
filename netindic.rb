@@ -75,15 +75,15 @@ class Netindic
   end
 
   def run
-#    Thread.new do loop do
+    Thread.new do loop do
       begin
         self.prepare_diag
         self.run_tests
       rescue Exception => e
         puts e.message
       end
-  #    sleep(20)
- #   end end
+      sleep(20)
+    end end
     Gtk.main
   end
   
