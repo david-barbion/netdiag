@@ -6,6 +6,11 @@ module Netdiag
       @config = Netdiag::Config.new
       @count = 0
     end
+
+    def prepare
+      true
+    end
+
     def diagnose
       @error = String.new
       count = 0

@@ -11,6 +11,10 @@ module Netdiag
       @ret = Hash.new
     end
   
+    def prepare
+      true
+    end
+
     def diagnose
       count = 0
       quality = 0
@@ -29,7 +33,6 @@ module Netdiag
       begin
         res = self.get_uri
         if res.is_a?(Net::HTTPSuccess)
-pp res
           body = JSON.parse(res.body)
           return false if body["headers"]["Host"] == "httpbin.org"
         end

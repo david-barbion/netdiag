@@ -28,6 +28,11 @@ class Netindic
     def initialize
       super
     end
+
+    def close_portal_authenticator_window
+      super
+      # this should refresh tests
+    end
   end
 
   def initialize
@@ -51,28 +56,41 @@ class Netindic
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
     @ai.set_icon("help_64")
 
-    @last_state=STATE_OK
+    @last_state=-1
 
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
-    @gateway = Netdiag::Gateway.new(@local.default_gateways)
+    @gateway = Netdiag::Gateway.new
     @dns = Netdiag::DNS.new
     @internet = Netdiag::Internet.new(@config.get_test_url)
 
     @portal_authenticator = Portal.new
   end
 
+  def prepare_diag
+    @local.prepare
+    @gateway.prepare(@local.default_gateways)
+    @dns.prepare
+    @internet.prepare
+  end
+
   def run
-    Thread.new do loop do
-      self.run_tests
-      sleep(20)
-    end end
+#    Thread.new do loop do
+      begin
+        self.prepare_diag
+        self.run_tests
+      rescue Exception => e
+        puts e.message
+      end
+  #    sleep(20)
+ #   end end
     Gtk.main
   end
   
   def show_diag
     @window = Netdiag::Window.new
     Thread.new {
+      self.prepare_diag
       # Test local interface LAN
       local_diag_info = 'Network interfaces informations:'
       if (@local.diagnose)
@@ -185,6 +203,8 @@ class Netindic
         puts "no error"
         @ai.set_icon("checkmark_64")
       end
+    else
+      puts "unknown state #{state}"
     end
   end
 
@@ -198,15 +218,15 @@ class Netindic
         if !@dns.diagnose
           self.set_state_and_notify(STATE_EDNS)
         else
-          if @internet.diagnose < 50
-            self.set_state_and_notify(STATE_EINTERNET)
+          if @internet.is_captive?
+            self.set_state_and_notify(STATE_ECAPTIVE)
+            @portal_authenticator.open_portal_authenticator_window
           else
-            if @internet.is_captive?
-#            if !@internet.is_captive? # TEST
-              self.set_state_and_notify(STATE_ECAPTIVE)
-              @portal_authenticator.open_portal_authenticator_window
+            if @internet.diagnose < 50
+              self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
+              @portal_authenticator.close_portal_authenticator_window
             end
           end
         end

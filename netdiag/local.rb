@@ -7,12 +7,15 @@ module Netdiag
     attr_reader :routes
     attr_reader :default_gateways
     def initialize
+    end
+  
+    def prepare
       @routes           = self.parse_routing_table
       @local_interfaces = self.get_address_list
       @routed_addresses = self.have_routed_address(@local_interfaces)
       @default_gateways = self.get_default_gateway_list(@routes)
     end
-  
+
     # diagnose local interface
     # at least, one interface should have
     # one IPv4 and optionaly IPv6

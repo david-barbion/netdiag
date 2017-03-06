@@ -1,12 +1,15 @@
 require 'netdiag/pingip'
 module Netdiag
   class Gateway
-    def initialize(gateway_list, ping_count=5)
-      @gateway_list = gateway_list
+    def initialize(ping_count=5)
       @ping_count = ping_count
       @analysis = Hash.new
     end
   
+    def prepare(gateway_list)
+      @gateway_list = gateway_list
+    end
+
     def diagnose
       count = 0
       quality = 0.0
