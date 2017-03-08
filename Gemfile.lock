@@ -46,7 +46,7 @@ GEM
     ruby-libappindicator (0.1.5)
       gtk2
       pkg-config
-    webkit-gtk (3.1.1)
+    webkit2-gtk (3.1.1)
       gobject-introspection (= 3.1.1)
       gtk3 (= 3.1.1)
 
@@ -58,7 +58,7 @@ DEPENDENCIES
   libnotify
   net-ping
   ruby-libappindicator
-  webkit-gtk
+  webkit2-gtk
 
 BUNDLED WITH
    1.12.5
