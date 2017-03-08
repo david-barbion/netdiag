@@ -31,8 +31,8 @@ module Netdiag
       return true
     end
   
-    def status
-      return "#{@count} DNS server(s) working" 
+    def message
+      return "Received #{@count} packet(s) from DNS server" 
     end
 
     def error
