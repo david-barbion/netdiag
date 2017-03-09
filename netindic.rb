@@ -22,7 +22,7 @@ STATE_EDNS=3
 STATE_EINTERNET=4
 STATE_ECAPTIVE=5
 
-class Netindic
+class Netindic 
 
   class Portal < Netdiag::Portal
     def initialize
@@ -33,10 +33,21 @@ class Netindic
       super
       # this should refresh tests
     end
+
+    def signal_do_portal_closed(*args)
+      puts "portal closed: last uri: #{args[:uri]}"
+      super
+    end
+
   end
 
   def initialize
     @portal_authenticator = Portal.new
+    @portal_authenticator.signal_connect "portal_closed" do
+      self.prepare_diag
+      self.run_tests
+    end
+
     @config = Netdiag::Config.new()
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
@@ -48,7 +59,7 @@ class Netindic
     @indicator_menu = Gtk::Menu.new
     @indicator_captive = Gtk::MenuItem.new :label => "Open captive portal authenticator window"
     @indicator_captive.signal_connect "activate" do
-      @portal_authenticator.open_portal_authenticator_window(:keep_open => true)
+      @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => 'http://httpbin.org')
     end
     @indicator_captive.show
     @indicator_menu.append @indicator_diagnose
@@ -227,7 +238,7 @@ class Netindic
         else
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
-            @portal_authenticator.open_portal_authenticator_window
+            @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)

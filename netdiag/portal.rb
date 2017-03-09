@@ -1,6 +1,7 @@
 require 'webkit2-gtk'
 
 module Netdiag
+
   class WindowPortal < Gtk::Window
     def initialize(uri)
       super
@@ -19,21 +20,38 @@ module Netdiag
       @view.reload_bypass_cache
     end
 
+    def uri
+      @view.uri
+    end
+
   end
 
-  class Portal
-    def initialize(uri="http://httpbin.org")
+  class Portal < GLib::Object
+    type_register
+    signal_new("portal_closed",         # name
+               GLib::Signal::RUN_FIRST, # flags
+               nil,                     # accumulator (XXX: not supported yet)
+               nil,                     # return type (void == nil)
+               String                   # parameter types
+               )
+
+
+    def initialize
+      super
       @keep_open=false
-      @uri = uri
       @opened = false
     end
 
     def open_portal_authenticator_window(args={})
       return if self.is_opened?
-      @window = Netdiag::WindowPortal.new(@uri)
+      @window = Netdiag::WindowPortal.new(args[:uri])
       @window.signal_connect("delete-event") do
         @keep_open=false
+        uri = @window.uri
         self.close_portal_authenticator_window
+        Thread.new do
+          self.signal_emit("portal_closed", uri)
+        end
         true
       end
       @keep_open=true if args[:keep_open]
@@ -55,6 +73,12 @@ module Netdiag
     def is_opened?
       @opened
     end
+
+    private
+
+    def signal_do_portal_closed(*args)
+    end
+
   end
 end
 

@@ -59,7 +59,6 @@ module Netdiag
         end
         raise "Get response code #{res[:result]}"
       rescue Exception => e
-        puts "#{e.message}"
         true
       end
     end
