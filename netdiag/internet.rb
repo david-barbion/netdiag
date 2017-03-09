@@ -25,11 +25,12 @@ module Netdiag
       quality = 0.0
       rtt = 0.0
       (1..@count).each do
-        if self.get_uri
+        res=self.get_uri
+        if res[:result]
           quality += 100
         end
         count += 1
-        rtt += @last_rtt
+        rtt += res[:rtt]
       end
       return 0 if count == 0
       @quality = quality / count
@@ -45,18 +46,18 @@ module Netdiag
       begin
         res = self.get_uri
         # internet can't be reached or test server unavailable
-        # in this case, a captive portal cannot be detected, let's give a change
-        return false if res == STATE_EEXPIRED 
+        # in this case, a captive portal cannot be detected, let's give a chance
+        return false if res[:result] == STATE_EEXPIRED 
 
         # usually, captive portal is done by
         # 1) sending a 302 to the client, redirecting to the portal, only works when client connect to http (not https)
         # 2) dns hijacking
         # 3) icmp redirect (not supported)
-        if res.is_a?(Net::HTTPSuccess) 
-          body = JSON.parse(res.body)
+        if res[:result].is_a?(Net::HTTPSuccess) 
+          body = JSON.parse(res[:result].body)
           return false if body["headers"]["Host"] == "httpbin.org"
         end
-        raise "Get response code #{res}"
+        raise "Get response code #{res[:result]}"
       rescue Exception => e
         puts "#{e.message}"
         true
@@ -72,7 +73,7 @@ module Netdiag
     end
   
     def get_uri
-      ret = nil
+      ret = Hash.new
       start = Time.now
       begin
         uri = URI(@url)
@@ -80,17 +81,17 @@ module Netdiag
         http.read_timeout = 3
         http.open_timeout = 3
         res = http.request_get(uri.path)
-        ret = res
+        ret[:result] = res
       rescue Net::OpenTimeout => e
         @error = e.message
         puts "get_uri(): timeout"
-        ret = STATE_EEXPIRED
+        ret[:result] = STATE_EEXPIRED
       rescue Exception => e
         @error = e.message
         puts "get_uri(): #{e.message}"
-        ret = false
+        ret[:result] = false
       end
-      @last_rtt = Time.now - start
+      ret[:rtt] = Time.now - start
       return ret
     end
   end
