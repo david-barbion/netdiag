@@ -145,7 +145,7 @@ class Netindic
   
       if internet_dns_diag
         internet_diag="DNS working"
-        internet_diag_info = @dns.status
+        internet_diag_info = @dns.message
       else
         internet_diag="DNS not working properly"
         internet_diag_info = "DNS is not working"
