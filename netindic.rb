@@ -27,6 +27,11 @@ class Netindic
   class Portal < Netdiag::Portal
     def initialize
       super
+      @quiet = false
+    end
+
+    def open_portal_authenticator_window(args={})
+      super(args) if !@quiet
     end
 
     def close_portal_authenticator_window
@@ -39,13 +44,20 @@ class Netindic
       super
     end
 
+    def quiet=(state)
+      # convert any value to boolean
+      @quiet = !!state
+    end
+
   end
 
   def initialize
     @portal_authenticator = Portal.new
     @portal_authenticator.signal_connect "portal_closed" do
       self.prepare_diag
+      @portal_authenticator.quiet = true
       self.run_tests
+      @portal_authenticator.quiet = false
     end
 
     @config = Netdiag::Config.new()

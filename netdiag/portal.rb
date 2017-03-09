@@ -3,11 +3,11 @@ require 'webkit2-gtk'
 module Netdiag
 
   class WindowPortal < Gtk::Window
+    attr_reader :view
     def initialize(uri)
       super
       @uri = uri
       @view_context = WebKit2Gtk::WebContext.new
-      #@view_context.set_tls_errors_policy(0)
       @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
       @view = WebKit2Gtk::WebView.new(@view_context)
       self.add(@view)
@@ -53,6 +53,15 @@ module Netdiag
           self.signal_emit("portal_closed", uri)
         end
         true
+      end
+      @window.view.signal_connect("submit-form") do |web_view, request, user_data|
+puts "form submited"
+pp user_data
+p request.get_type
+request.get_text_fields().each do |k,v|
+  puts "#{k}=#{v}"
+end
+        request.submit
       end
       @keep_open=true if args[:keep_open]
       @window.reload_portal
