@@ -5,9 +5,12 @@ module Netdiag
     def initialize(uri)
       super
       @uri = uri
-      @view = WebKit2Gtk::WebView.new
+      @view_context = WebKit2Gtk::WebContext.new
+      #@view_context.set_tls_errors_policy(0)
+      @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
+      @view = WebKit2Gtk::WebView.new(@view_context)
       self.add(@view)
-      self.set_default_size 544, 280
+      self.set_default_size 544, 380
       self.window_position = :center
     end
 
