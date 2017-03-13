@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require "gtk3"
-require_relative "../netdiag-config"
+require_relative "./config"
 
 module Netdiag
   class Window < Gtk::Window

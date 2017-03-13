@@ -1,4 +1,4 @@
-require_relative '../netdiag-config'
+require_relative './config'
 module Netdiag
   class DNS
     def initialize

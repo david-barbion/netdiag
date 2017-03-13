@@ -4,6 +4,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'socket'
 require 'net/ping'
 require 'resolv'
+require 'netdiag/config'
 require 'netdiag/local'
 require 'netdiag/gateway'
 require 'netdiag/dns'
@@ -13,7 +14,6 @@ require 'netdiag/portal'
 require 'appindicator.so'
 require 'netdiag/window'
 require 'libnotify'
-require 'netdiag-config'
 
 STATE_OK=0
 STATE_ELOCAL=1

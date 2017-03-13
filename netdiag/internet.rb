@@ -1,5 +1,5 @@
 require 'net/http'
-require_relative '../netdiag-config'
+require_relative './config'
 require 'json'
 require 'pp'
 
