@@ -14,7 +14,7 @@ module Netdiag
     def do
       rtt = Array.new
       no_response = 0
-      (1..@count).each do
+      (1..@count).each do |count|
         begin
           rtt << self.do_ping
         rescue Exception => err

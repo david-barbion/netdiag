@@ -5,7 +5,15 @@ GEM
       glib2 (= 3.1.1)
     cairo (1.15.5)
       pkg-config (>= 1.1.5)
+    cairo-gobject (3.1.1)
+      cairo
+      glib2 (= 3.1.1)
     ffi (1.9.17)
+    gdk3 (3.1.1)
+      cairo-gobject (= 3.1.1)
+      gdk_pixbuf2 (= 3.1.1)
+      gobject-introspection (= 3.1.1)
+      pango (= 3.1.1)
     gdk_pixbuf2 (3.1.1)
       gio2 (= 3.1.1)
     gio2 (3.1.1)
@@ -19,6 +27,14 @@ GEM
       atk (= 3.1.1)
       gdk_pixbuf2 (= 3.1.1)
       pango (= 3.1.1)
+    gtk3 (3.1.1)
+      atk (= 3.1.1)
+      gdk3 (= 3.1.1)
+      gdk_pixbuf2 (= 3.1.1)
+      gio2 (= 3.1.1)
+      glib2 (= 3.1.1)
+      gobject-introspection (= 3.1.1)
+      pango (= 3.1.1)
     json (2.0.1)
     libnotify (0.9.3)
       ffi (>= 1.0.11)
@@ -30,6 +46,9 @@ GEM
     ruby-libappindicator (0.1.5)
       gtk2
       pkg-config
+    webkit2-gtk (3.1.1)
+      gobject-introspection (= 3.1.1)
+      gtk3 (= 3.1.1)
 
 PLATFORMS
   ruby
@@ -39,6 +58,7 @@ DEPENDENCIES
   libnotify
   net-ping
   ruby-libappindicator
+  webkit2-gtk
 
 BUNDLED WITH
    1.12.5
