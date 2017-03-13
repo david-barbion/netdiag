@@ -56,11 +56,11 @@ module Netdiag
       end
       @window.view.signal_connect("submit-form") do |web_view, request, user_data|
 puts "form submited"
-pp user_data
-p request.get_type
-request.get_text_fields().each do |k,v|
-  puts "#{k}=#{v}"
-end
+puts request.instance_variables
+#data = request.text_fields.to_s # seems unimplemented
+#request.text_fields.each do |k,v|
+#  puts "#{k}=#{v}"
+#end
         request.submit
       end
       @keep_open=true if args[:keep_open]
@@ -90,9 +90,3 @@ end
 
   end
 end
-
-
-
-
-
-
