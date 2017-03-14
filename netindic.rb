@@ -80,7 +80,7 @@ class Netindic
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new
-    @dns = Netdiag::DNS.new
+    @dns = Netdiag::DNS.new(@config.test_dns)
     @internet = Netdiag::Internet.new(@config.test_url)
 
   end

@@ -1,10 +1,9 @@
-require_relative './config'
 module Netdiag
   class DNS
-    def initialize
+    def initialize(name_to_resolve)
       @dns = Resolv::DNS.new
-      @config = Netdiag::Config.new
       @count = 0
+      @name_to_resolve = name_to_resolve
     end
 
     def prepare
@@ -15,13 +14,13 @@ module Netdiag
       @error = String.new
       count = 0
       begin
-        self.resolve_ipv4(@config.test_dns)
+        self.resolve_ipv4(@name_to_resolve)
         count += 1
       rescue Exception => e
         @error << "#{e.message}\n"
       end
       begin
-        self.resolve_ipv6(@config.test_dns)
+        self.resolve_ipv6(@name_to_resolve)
         count += 1
       rescue Exception => e
         @error << "#{e.message}\n"
