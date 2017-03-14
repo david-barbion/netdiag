@@ -15,12 +15,12 @@ Just run `netindic.rb`
 
 # Configuration
 
-Configuration is done by creating the directory `.netdiag`. The file `config.yaml` inside this directory can contain:
-* `:theme`: the icon theme to use
-* `:test_dns`: the internet name to query for determining DNS is working
-* `:test_url`: the url to test for determining internet reachability
+Configuration is done by creating the directory `.config/netdiag`. The file `config.yaml` resides in this directory. It contains:
+* `:theme:`: the icon theme to use
+* `:test_dns:`: the internet name to query for determining DNS is working
+* `:test_url:`: the url to test for determining internet reachability
 
-Currently, configuration is read only on startup.
+Currently, configuration is read on startup only.
 
 # Credits
 * Theme / iconic : [Open Iconic](https://github.com/iconic/open-iconic) - MIT 
