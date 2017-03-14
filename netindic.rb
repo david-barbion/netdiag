@@ -72,7 +72,7 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.theme}")
     @ai.set_icon("help_64")
 
     @last_state=-1
@@ -81,7 +81,7 @@ class Netindic
     @local = Netdiag::Local.new
     @gateway = Netdiag::Gateway.new
     @dns = Netdiag::DNS.new
-    @internet = Netdiag::Internet.new(@config.get_test_url)
+    @internet = Netdiag::Internet.new(@config.test_url)
 
   end
 

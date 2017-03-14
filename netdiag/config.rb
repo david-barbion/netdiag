@@ -1,25 +1,15 @@
+require 'yaml'
 require 'pathname'
 module Netdiag
   class Config
-    attr_reader :theme
-    attr_reader :test_url
-    attr_reader	:test_dns
-    attr_reader :config_dir
-
     def initialize(config_dir=nil)
       @config_dir = find_config_dir if config_dir.nil? 
-      @theme = 'iconic'
-      @test_url = 'http://httpbin.org/get'
-      @test_dns = 'root-servers.org'
-    end
-    def get_theme
-      return @theme
-    end
-    def get_test_url
-      return @test_url
-    end
-    def get_test_dns
-      return @test_dns
+      @cnf = Hash.new
+      @cnf[:theme] = 'iconic'
+      @cnf[:test_url] = 'http://httpbin.org/get'
+      @cnf[:test_dns] = 'root-servers.org'
+      self.load_config
+      self.parse_config
     end
 
     # put your configuration in the directory .netdiag
@@ -31,6 +21,20 @@ module Netdiag
       else
         return nil if dir.expand_path.root?
         find_config_dir(dir.parent)
+      end
+    end
+
+    def load_config
+      if File::exist?("#{@config_dir}/config.yaml")
+        @cnf.merge!(YAML::load_file("#{@config_dir}/config.yaml"))
+      end
+    end
+
+    def parse_config
+      @cnf.each do |k,v|
+        define_singleton_method(k.to_s) do
+          return v
+        end
       end
     end
 

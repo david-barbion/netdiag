@@ -15,13 +15,13 @@ module Netdiag
       @error = String.new
       count = 0
       begin
-        self.resolve_ipv4(@config.get_test_dns)
+        self.resolve_ipv4(@config.test_dns)
         count += 1
       rescue Exception => e
         @error << "#{e.message}\n"
       end
       begin
-        self.resolve_ipv6(@config.get_test_dns)
+        self.resolve_ipv6(@config.test_dns)
         count += 1
       rescue Exception => e
         @error << "#{e.message}\n"
