@@ -25,7 +25,7 @@ STATE_ECAPTIVE=5
 class Netindic 
 
   class Portal < Netdiag::Portal
-    def initialize
+    def initialize(args={})
       super
     end
 
@@ -39,16 +39,26 @@ class Netindic
       super
     end
 
+#    def signal_do_form_submitted(*args)
+#      super
+#    end
+
   end
 
   def initialize
-    @portal_authenticator = Portal.new
+    @config = Netdiag::Config.new()
+    @portal_authenticator = Portal.new(:uri => @config.test_url)
     @portal_authenticator.signal_connect "portal_closed" do
       self.prepare_diag
       self.run_tests
     end
 
-    @config = Netdiag::Config.new()
+    @portal_authenticator.signal_connect "form_submitted" do |portal,uri|
+      puts "form: #{uri}"
+      self.prepare_diag
+      self.run_tests
+    end
+
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"

@@ -5,8 +5,17 @@ RELOAD_MAX_TRIES=50 # this seems a little bit overkill...
 module Netdiag
 
   class WindowPortal < Gtk::Window
+    type_register
+    attr_reader :view
+    signal_new("portal_form_submitted",        # name
+               GLib::Signal::RUN_FIRST, # flags
+               nil,                     # accumulator (XXX: not supported yet)
+               nil,                     # return type (void == nil)
+               String                   # parameter types
+               )
+
     def initialize(url)
-      super
+      super()
       @url = url
       @redirect_url = ''
       @last_url = ''
@@ -20,8 +29,13 @@ module Netdiag
       # stores URI when loading state changed
       # this permits to keep the redirection URL (ie, the captive portal URL)
       @view.signal_connect("load-changed") do |web_view, load_event, user_data|
-        @redirect_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::REDIRECTED
-        @last_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::FINISHED
+        case load_event
+        when WebKit2Gtk::LoadEvent::REDIRECTED
+          @redirect_url = web_view.uri
+        when WebKit2Gtk::LoadEvent::FINISHED
+          @last_url = web_view.uri
+           self.signal_emit("portal_form_submitted", web_view.uri)
+        end
       end
 
       # intercept load errors, this can be caused by network problem,
@@ -43,14 +57,17 @@ module Netdiag
     end
 
     # initiate a new load
-    def reload_portal
+    def reload_portal(url=@url)
       @tries = RELOAD_MAX_TRIES
-      @view.load_uri(@url)
+      @view.load_uri(url)
 #      @view.reload_bypass_cache
     end
 
     def url
       @view.uri
+    end
+
+    def signal_do_portal_form_submitted(*args)
     end
 
   end
@@ -63,17 +80,28 @@ module Netdiag
                nil,                     # return type (void == nil)
                String                   # parameter types
                )
+    signal_new("form_submitted",        # name
+               GLib::Signal::RUN_FIRST, # flags
+               nil,                     # accumulator (XXX: not supported yet)
+               nil,                     # return type (void == nil)
+               String                   # parameter types
+               )
 
-
-    def initialize
-      super
+    # initialize a new portal
+    def initialize(args={})
+      super()
       @keep_open=false
       @opened = false
     end
 
+    # open the portal window with the passed URI
+    #
     def open_portal_authenticator_window(args={})
       return if self.is_opened?
       @window = Netdiag::WindowPortal.new(args[:uri])
+      @window.signal_connect("portal_form_submitted") do |portal, uri|
+        self.signal_emit("form_submitted", uri)
+      end
       @window.signal_connect("delete-event") do
         @keep_open=false
         uri = @window.url
@@ -106,6 +134,8 @@ module Netdiag
     private
 
     def signal_do_portal_closed(*args)
+    end
+    def signal_do_form_submitted(*args)
     end
 
   end
