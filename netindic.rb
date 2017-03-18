@@ -128,8 +128,12 @@ class Netindic
       internet_diag_info.concat("\nInternet reachable")
       @window.wan_status=true
     else
+      if internet_net_diag.is_captive?
+        internet_diag_info.concat("\nInternet blocked by a captive portal")
+      else
+        internet_diag_info.concat("\nInternet not reachable")
+      end
       internet_diag.concat("\nQuality: #{internet_net_diag}%")
-      internet_diag_info.concat("\nInternet not reachable")
       @window.wan_status=false
     end
     puts "DNS: #{internet_diag}"
