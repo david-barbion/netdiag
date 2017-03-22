@@ -7,8 +7,7 @@ module Netdiag
 
     def initialize
 	super
-        @config = Netdiag::Config.new
-        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.theme}"
+        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{Netdiag::Config.theme}"
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false

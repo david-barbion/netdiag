@@ -48,7 +48,7 @@ class Netindic
       self.run_tests
     end
 
-    @config = Netdiag::Config.new()
+    Netdiag::Config.load!("#{ENV['HOME']}/.config/netdiag/config.yaml")
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"
@@ -72,16 +72,17 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.theme}")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}")
     @ai.set_icon("help_64")
 
     @last_state=-1
 
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
-    @gateway = Netdiag::Gateway.new
-    @dns = Netdiag::DNS.new(@config.test_dns)
-    @internet = Netdiag::Internet.new(@config.test_url)
+    @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
+                                    ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+    @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
+    @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
 
   end
 
@@ -188,7 +189,7 @@ class Netindic
       end
     when STATE_EGATEWAY
       if @last_state != STATE_EGATEWAY
-        Libnotify.show(:summary => @gateway.status, :body => "Maybe a temporary network failure\n#{@gateway.message}", :timeout => 2.5)
+        Libnotify.show(:summary => @gateway.status, :body => "#{@gateway.message}", :timeout => 2.5)
         @last_state = STATE_EGATEWAY
         puts "error 2"
         @ai.set_icon("help_64")
