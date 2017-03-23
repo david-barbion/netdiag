@@ -1,11 +1,24 @@
 # Installation
 
-Before using netdiag, some librairies must be installed. Example for Ubuntu 16+:
+Before using netdiag, some librairies must be installed. 
 
+Example for Ubuntu 16+:
 ```bash
 sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0
+git clone https://github.com/david-barbion/netdiag 
+cd netdiag
 bundle install
 ```
+
+Example for Debian 8 Jessie:
+```bash
+sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0
+git clone https://github.com/david-barbion/netdiag 
+cd netdiag
+bundle install
+```
+
+Bundle will ask for your password.
 
 This app is now compatible with GTK3.
 
