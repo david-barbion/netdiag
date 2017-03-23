@@ -89,13 +89,13 @@ module Netdiag
 
       begin
         newsets = YAML::load_file(filename).deep_symbolize
+        newsets = newsets[options[:env].to_sym] if \
+                                                 options[:env] && \
+                                                 newsets[options[:env].to_sym]
+        deep_merge!(@_settings, newsets)
       rescue Exception => e
         $stderr.puts "Couldn't load config file #{filename}: #{e.message}"
       end
-      newsets = newsets[options[:env].to_sym] if \
-                                                 options[:env] && \
-                                                 newsets[options[:env].to_sym]
-      deep_merge!(@_settings, newsets)
     end
   
     # Deep merging of hashes
