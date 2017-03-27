@@ -42,7 +42,9 @@ module Netdiag
         @analysis[res[:ip]] = res
         @analysis[res[:ip]][:quality] = quality
       end
-      return 0 if count == 0 or ( @ipv4_mandatory and !@have_ipv4 ) or (@ipv6_mandatory and !@have_ipv6)
+      return 0 if count == 0 
+      quality /= 2.0 if ( @ipv4_mandatory and !@have_ipv4 ) 
+      quality /= 2.0 if ( @ipv6_mandatory and !@have_ipv6 )
       @quality = quality / count
       @quality
     end
