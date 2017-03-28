@@ -132,7 +132,10 @@ class Netindic
       # Test Gateway reachability
       gw_diag_percent = @gateway.diagnose
       puts "La qualité d'accès à la/les gateway(s): #{gw_diag_percent}"
-      @window.gw_diag=("Quality: #{gw_diag_percent.round(2)}%")
+      gw_diag = "Quality: #{gw_diag_percent.round(2)}%"
+      gw_diag.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
+      gw_diag.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
+      @window.gw_diag=gw_diag
       # stop lan blinking
       if gw_diag_percent >= 50
         @window.lan_status=(true)
@@ -145,11 +148,11 @@ class Netindic
         gw_diag_info = 'Gateway address:'
       end
       @local.default_gateways.each do |gw|
-        gw_diag_info.concat("\n#{gw}")
+        gw_diag_info.concat("\n#{gw} quality: #{@gateway.get_gw_quality(gw).round(2)}%")
       end
+      gw_diag_info.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
+      gw_diag_info.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
       @window.gw_diag_info=gw_diag_info
-      #gw.raise_diag
-  
   
       # test internet access
       internet_dns_diag = @dns.diagnose

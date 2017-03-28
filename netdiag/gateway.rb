@@ -1,6 +1,8 @@
 require 'netdiag/pingip'
 module Netdiag
   class Gateway
+    attr_reader :ipv4_quality, :ipv6_quality, :have_ipv4, :have_ipv6, :ipv4_mandatory, :ipv6_mandatory
+
     def initialize(args={})
       @ping_count = args[:ping_count] ? args[:ping_count] : 5
       @ipv4_mandatory = args[:ipv4_mandatory] ? args[:ipv4_mandatory] : true
@@ -11,6 +13,8 @@ module Netdiag
     def prepare(gateway_list)
       @have_ipv4 = false
       @have_ipv6 = false
+      @ipv4_quality = 0
+      @ipv6_quality = 0
       @gateway_list = gateway_list
       @gateway_list.each do |gw|
         case gw.gsub(/%.*/, '')
@@ -22,13 +26,27 @@ module Netdiag
       end
     end
 
-    
+    def is_ipv4_gateway_missing
+      return false if !@ipv4_mandatory
+      return !@have_ipv4
+    end
+
+    def is_ipv6_gateway_missing
+      return false if !@ipv6_mandatory
+      return !@have_ipv6
+    end
+
+    def get_gw_quality(gw)
+      @analysis[gw][:quality]
+    end
 
     def diagnose
       count = 0
       quality = 0.0
+      global_quality = 0.0
       self.ping_gw.each do |res|
-        quality = quality + (((res[:count].to_f-res[:failure].to_f)/res[:count].to_f)*100.0)
+        quality = (((res[:count].to_f-res[:failure].to_f)/res[:count].to_f)*100.0)
+        global_quality += quality
         if res[:rtt].nil?
           puts "ping error for #{res[:ip]}"
         elsif res[:rtt] >= 0.05 and res[:rtt] < 0.1
@@ -40,12 +58,20 @@ module Netdiag
         end
         count += 1
         @analysis[res[:ip]] = res
-        @analysis[res[:ip]][:quality] = quality
+        # this is to compute quality per protocol
+        case res[:ip].gsub(/%.*/, '')
+        when Resolv::IPv4::Regex
+          @ipv4_quality += quality
+          @analysis[res[:ip]][:quality] = @ipv4_quality
+        when Resolv::IPv6::Regex
+          @ipv6_quality += quality
+          @analysis[res[:ip]][:quality] = @ipv6_quality
+        end
       end
       return 0 if count == 0 
-      quality /= 2.0 if ( @ipv4_mandatory and !@have_ipv4 ) 
-      quality /= 2.0 if ( @ipv6_mandatory and !@have_ipv6 )
-      @quality = quality / count
+      global_quality /= 2.0 if ( @ipv4_mandatory and !@have_ipv4 ) 
+      global_quality /= 2.0 if ( @ipv6_mandatory and !@have_ipv6 )
+      @quality = global_quality / count
       @quality
     end
   
