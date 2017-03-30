@@ -2,17 +2,10 @@
 
 Before using netdiag, some librairies must be installed. 
 
-Example for Ubuntu 16+:
-```bash
-sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0
-git clone https://github.com/david-barbion/netdiag 
-cd netdiag
-bundle install
-```
+## Ubuntu 16+:
 
-Example for Debian 8 Jessie:
 ```bash
-sudo apt install ruby-dev libcairo-dev libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0
+sudo apt install libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0 ruby-json ruby-atk ruby-pango ruby-gio2 ruby-cairo ruby-cairo-gobject ruby-gobject-introspection ruby-gdk-pixbuf2 ruby-gdk3 ruby-glib2 ruby-gtk2 ruby-ffi
 git clone https://github.com/david-barbion/netdiag 
 cd netdiag
 bundle install
@@ -20,11 +13,21 @@ bundle install
 
 Bundle will ask for your password.
 
-This app is now compatible with GTK3.
+## Debian 8 Jessie:
+If you are running Gnome Shell, you must enable AppIndicator: take a look here https://extensions.gnome.org/extension/615/appindicator-support/
+
+```bash
+sudo apt install libappindicator-dev ruby-bundler ruby-gtk3 gir1.2-webkit2-4.0 ruby-json ruby-atk ruby-pango ruby-gio2 ruby-cairo ruby-cairo-gobject ruby-gobject-introspection ruby-gdk-pixbuf2 ruby-gdk3 ruby-glib2 ruby-gtk2 ruby-ffi
+git clone https://github.com/david-barbion/netdiag 
+cd netdiag
+bundle install
+```
+
+Bundle will ask for your password.
 
 # Usage
 
-Just run `netindic.rb`
+Just run `./netindic.rb`
 
 # Configuration
 
@@ -37,3 +40,4 @@ Currently, configuration is read on startup only.
 
 # Credits
 * Theme / iconic : [Open Iconic](https://github.com/iconic/open-iconic) - MIT 
+
