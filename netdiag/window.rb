@@ -24,16 +24,16 @@ module Netdiag
         override_background_color :normal, Gdk::RGBA::new(0.8, 0.8, 0.8, 1)
 
         begin
-            local_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/local.png")
-            gateway_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/gateway.png")
-            internet_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/internet.png")
-            conn_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/connection.png")
-            conn_pb_alt = Gdk::Pixbuf.new(:file => "#{@icon_path}/connection.png")
+            local_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/local.png")
+            gateway_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/gateway.png")
+            internet_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/internet.png")
+            conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
+            conn_pb_alt = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
             conn_pb_alt = conn_pb_alt.saturate_and_pixelate(5.5, true)
-            no_conn_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/no_connection.png")
-            small_local_pb = local_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_gateway_pb = gateway_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_internet_pb = internet_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
+            no_conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/no_connection.png")
+            small_local_pb = local_pb.scale(128, 128, :bilinear)
+            small_gateway_pb = gateway_pb.scale(128, 128, :bilinear)
+            small_internet_pb = internet_pb.scale(128, 128, :bilinear)
         rescue IOError => e
             puts e
             puts "cannot load images"
@@ -85,6 +85,7 @@ module Netdiag
         end
 
         set_default_size 544, 280
+        self.icon_name='gnome-nettool'
         self.window_position = :center
 	self.open_window
     end
@@ -95,6 +96,7 @@ module Netdiag
 
     def open_window
         self.show_all
+        self.present
         GLib::Timeout.add(1000) do
           if !self.change_lan_icon
             false

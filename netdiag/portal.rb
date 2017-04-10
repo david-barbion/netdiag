@@ -10,12 +10,16 @@ module Netdiag
       @url = url
       @redirect_url = ''
       @last_url = ''
+      @vbox = Gtk::Box.new(:vertical)
       @view_context = WebKit2Gtk::WebContext.new
       @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
       @view = WebKit2Gtk::WebView.new(@view_context)
-      self.add(@view)
+      @vbox.pack_start(Gtk::Label.new.set_markup('<span foreground="#000000">Authentication needed</span>'),:expand => false, :padding => 15)
+      @vbox.pack_start(@view, :expand => true, :fill => true)
+      self.add(@vbox)
       self.set_default_size 544, 380
       self.window_position = :center
+      self.icon_name = 'system-lock-screen'
 
       # stores URI when loading state changed
       # this permits to keep the redirection URL (ie, the captive portal URL)
@@ -86,6 +90,9 @@ module Netdiag
       @keep_open=true if args[:keep_open]
       @window.reload_portal
       @window.show_all
+      # this hack brings the portal window authenticator to front
+      @window.set_keep_above(true)
+      @window.set_keep_above(false)
       @opened = true
     end
 
