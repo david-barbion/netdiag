@@ -48,7 +48,7 @@ class Netindic
       self.run_tests
     end
 
-    Netdiag::Config.load!("#{ENV['HOME']}/.config/netdiag/config.yaml")
+    Netdiag::Config.load!("#{ENV['HOME']}/.config/netindic/config.yaml")
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"

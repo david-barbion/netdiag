@@ -1,6 +1,6 @@
 # Installation
 
-Before using netdiag, some librairies must be installed. 
+Before using netindic, some librairies must be installed. 
 
 ## Ubuntu 16+:
 
@@ -35,7 +35,7 @@ Run `./install.sh` to enable automatic startup on session start.
 
 # Configuration
 
-Configuration is done by creating the directory `.config/netdiag`. The file `config.yaml` resides in this directory. It contains:
+Configuration is done by creating the directory `.config/netindic`. The file `config.yaml` resides in this directory. It contains:
 * `:theme:`: the icon theme to use
 * `:test_dns:`: the internet name to query for determining DNS is working
 * `:test_url:`: the url to test for determining internet reachability
