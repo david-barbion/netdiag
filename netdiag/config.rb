@@ -94,7 +94,7 @@ module Netdiag
                                                  newsets[options[:env].to_sym]
         deep_merge!(@_settings, newsets)
       rescue Exception => e
-        $stderr.puts "Couldn't load config file #{filename}: #{e.message}"
+        $stderr.puts "Couldn't load config file #{filename}: #{e.message}. Using defaults."
       end
     end
   
