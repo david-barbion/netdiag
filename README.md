@@ -24,6 +24,17 @@ bundle install
 ```
 
 Bundle will ask for your password.
+ 
+## Archlinux and Manjaro 17 Gellivara
+
+```
+pacman -S ruby ruby-bundler ruby-gtk2 ruby-json ruby-atk ruby-pango ruby-gio2 ruby-cairo ruby-gobject-introspection ruby-gdk_pixbuf2 ruby-glib2 ruby-ffi gobject-introspection libappindicator-gtk2
+git clone https://github.com/david-barbion/netdiag 
+cd netdiag
+bundle install
+```
+
+Bundle will ask for your password.
 
 # Usage
 
