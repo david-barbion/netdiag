@@ -10,9 +10,11 @@ Netindic is an indicator tool for diagnosing network connectivity problem. The i
 If a captive portal is detected, an authentication window is opened.
 
 Basically, netindic tests all components every 20 seconds. 
+
 ![Indicator](https://github.com/david-barbion/netdiag/wiki/images/indicator.png)
 
 At any time, one can ask for a network diagnosis. The following window will appear:
+
 ![Diagnose](https://github.com/david-barbion/netdiag/wiki/images/diagnose.png)
 
 # Installation
