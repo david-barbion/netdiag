@@ -9,6 +9,7 @@ require 'netdiag/local'
 require 'netdiag/gateway'
 require 'netdiag/dns'
 require 'netdiag/internet'
+require 'netdiag/preferences'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
@@ -43,6 +44,8 @@ class Netindic
 
   def initialize
     @portal_authenticator = Portal.new
+    @preferences = Netdiag::Preferences.new
+
     @portal_authenticator.signal_connect "portal_closed" do
       self.prepare_diag
       self.run_tests
@@ -56,14 +59,21 @@ class Netindic
       self.show_diag
     end
     @indicator_diagnose.show
-    @indicator_menu = Gtk::Menu.new
     @indicator_captive = Gtk::MenuItem.new :label => "Open captive portal authenticator window"
     @indicator_captive.signal_connect "activate" do
       @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => 'http://httpbin.org')
     end
     @indicator_captive.show
+    @indicator_prefs = Gtk::MenuItem.new :label => "Preferences"
+    @indicator_prefs.signal_connect "activate" do
+      @preferences = Netdiag::Preferences.new(:parent => @ai)
+      @preferences.show
+    end
+    @indicator_prefs.show
     @indicator_menu.append @indicator_diagnose
     @indicator_menu.append @indicator_captive
+    @indicator_menu.append @indicator_prefs
+
     @indicator_exit     = Gtk::MenuItem.new :label => "Exit"
     @indicator_exit.signal_connect "activate" do
       Gtk.main_quit
