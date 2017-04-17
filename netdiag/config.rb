@@ -98,6 +98,15 @@ module Netdiag
       end
     end
   
+    def save(filename, settings = {})
+      begin
+        FileUtils.mkdir_p(File.dirname(filename))
+        File.open(filename, 'w') {|f| f.write settings.to_yaml } 
+      rescue Exception => e
+        $stderr.puts "Couldn't save config file #{filename}: #{e.message}"
+      end
+    end
+
     # Deep merging of hashes
     # deep_merge by Stefan Rusterholz, see http://www.ruby-forum.com/topic/142809
     def deep_merge!(target, data)
