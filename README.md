@@ -34,7 +34,19 @@ bundle install
 
 Bundle will ask for your password.
 
-## Debian 8 Jessie and Debian 9 Stretch:
+## Debian 8 Jessie
+If you are running Gnome Shell, you have to enable AppIndicator: take a look here https://extensions.gnome.org/extension/615/appindicator-support/
+
+```bash
+sudo apt install libappindicator-dev bundler ruby-gtk3 gir1.2-webkit2-4.0 ruby-json ruby-atk ruby-pango ruby-gio2 ruby-cairo ruby-cairo-gobject ruby-gobject-introspection ruby-gdk-pixbuf2 ruby-gdk3 ruby-glib2 ruby-gtk2 ruby-ffi
+git clone https://github.com/david-barbion/netdiag 
+cd netdiag
+bundle install
+```
+
+Bundle will ask for your password.
+ 
+## Debian 9 Stretch:
 If you are running Gnome Shell, you have to enable AppIndicator: take a look here https://extensions.gnome.org/extension/615/appindicator-support/
 
 ```bash
