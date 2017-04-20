@@ -4,7 +4,7 @@ module Netdiag
   class Preferences
     def initialize(options={})
       @builder = Gtk::Builder.new
-      @builder.add_from_file("#{File.dirname(File.expand_path(__FILE__))}/../preferences.ui")
+      @builder.add_from_file("#{File.dirname(File.expand_path(__FILE__))}/../ui/preferences.ui")
 
       @builder.connect_signals{ |handler| method(handler) }
       @window = @builder.get_object('main_window')
