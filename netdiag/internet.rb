@@ -1,9 +1,10 @@
 require 'net/http'
-require_relative '../netdiag-config'
+require_relative './config'
 require 'json'
-require 'pp'
 
-STATE_EEXPIRED=100
+STATE_INTERNET_OK=0
+STATE_INTERNET_EUNKNOWN=1
+STATE_INTERNET_EEXPIRED=100
 
 module Netdiag
   class Internet
@@ -26,10 +27,10 @@ module Netdiag
       rtt = 0.0
       (1..@count).each do
         res=self.get_uri
-        if res[:result]
+        if res[:result].is_a?(Net::HTTPSuccess)
           quality += 100
+          count += 1
         end
-        count += 1
         rtt += res[:rtt]
       end
       return 0 if count == 0
@@ -47,7 +48,7 @@ module Netdiag
         res = self.get_uri
         # internet can't be reached or test server unavailable
         # in this case, a captive portal cannot be detected, let's give a chance
-        return false if res[:result] == STATE_EEXPIRED 
+        return false if res[:result] == STATE_INTERNET_EEXPIRED 
 
         # usually, captive portal is done by
         # 1) sending a 302 to the client, redirecting to the portal, only works when client connect to http (not https)
@@ -83,12 +84,12 @@ module Netdiag
         ret[:result] = res
       rescue Net::OpenTimeout => e
         @error = e.message
-        puts "get_uri(): timeout"
-        ret[:result] = STATE_EEXPIRED
+        puts "get_uri(): #{e.message}"
+        ret[:result] = STATE_INTERNET_EEXPIRED
       rescue Exception => e
         @error = e.message
         puts "get_uri(): #{e.message}"
-        ret[:result] = false
+        ret[:result] = STATE_INTERNET_EUNKNOWN
       end
       ret[:rtt] = Time.now - start
       return ret

@@ -4,16 +4,17 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'socket'
 require 'net/ping'
 require 'resolv'
+require 'netdiag/config'
 require 'netdiag/local'
 require 'netdiag/gateway'
 require 'netdiag/dns'
 require 'netdiag/internet'
+require 'netdiag/preferences'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
 require 'netdiag/window'
 require 'libnotify'
-require 'netdiag-config'
 
 STATE_OK=0
 STATE_ELOCAL=1
@@ -53,6 +54,8 @@ class Netindic
 
   def initialize
     @portal_authenticator = Portal.new
+    @preferences = Netdiag::Preferences.new
+
     @portal_authenticator.signal_connect "portal_closed" do
       self.prepare_diag
       @portal_authenticator.quiet = true
@@ -60,7 +63,7 @@ class Netindic
       @portal_authenticator.quiet = false
     end
 
-    @config = Netdiag::Config.new()
+    Netdiag::Config.load!("#{ENV['HOME']}/.config/netindic/config.yaml")
     @ai = AppIndicator::AppIndicator.new("Netdiag", "indicator-messages", AppIndicator::Category::COMMUNICATIONS);
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"
@@ -68,14 +71,21 @@ class Netindic
       self.show_diag
     end
     @indicator_diagnose.show
-    @indicator_menu = Gtk::Menu.new
     @indicator_captive = Gtk::MenuItem.new :label => "Open captive portal authenticator window"
     @indicator_captive.signal_connect "activate" do
       @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => 'http://httpbin.org')
     end
     @indicator_captive.show
+    @indicator_prefs = Gtk::MenuItem.new :label => "Preferences"
+    @indicator_prefs.signal_connect "activate" do
+      @preferences = Netdiag::Preferences.new(:parent => @ai)
+      @preferences.show
+    end
+    @indicator_prefs.show
     @indicator_menu.append @indicator_diagnose
     @indicator_menu.append @indicator_captive
+    @indicator_menu.append @indicator_prefs
+
     @indicator_exit     = Gtk::MenuItem.new :label => "Exit"
     @indicator_exit.signal_connect "activate" do
       Gtk.main_quit
@@ -84,16 +94,17 @@ class Netindic
     @indicator_menu.append @indicator_exit
     @ai.set_menu(@indicator_menu)
     @ai.set_status(AppIndicator::Status::ACTIVE)
-    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{@config.get_theme}")
+    @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}")
     @ai.set_icon("help_64")
 
     @last_state=-1
 
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
-    @gateway = Netdiag::Gateway.new
-    @dns = Netdiag::DNS.new
-    @internet = Netdiag::Internet.new(@config.get_test_url)
+    @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
+                                    ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+    @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
+    @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
 
   end
 
@@ -143,7 +154,10 @@ class Netindic
       # Test Gateway reachability
       gw_diag_percent = @gateway.diagnose
       puts "La qualité d'accès à la/les gateway(s): #{gw_diag_percent}"
-      @window.gw_diag=("Quality: #{gw_diag_percent.round(2)}%")
+      gw_diag = "Quality: #{gw_diag_percent.round(2)}%"
+      gw_diag.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
+      gw_diag.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
+      @window.gw_diag=gw_diag
       # stop lan blinking
       if gw_diag_percent >= 50
         @window.lan_status=(true)
@@ -156,11 +170,11 @@ class Netindic
         gw_diag_info = 'Gateway address:'
       end
       @local.default_gateways.each do |gw|
-        gw_diag_info.concat("\n#{gw}")
+        gw_diag_info.concat("\n#{gw} quality: #{@gateway.get_gw_quality(gw).round(2)}%")
       end
+      gw_diag_info.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
+      gw_diag_info.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
       @window.gw_diag_info=gw_diag_info
-      #gw.raise_diag
-  
   
       # test internet access
       internet_dns_diag = @dns.diagnose
@@ -200,7 +214,7 @@ class Netindic
       end
     when STATE_EGATEWAY
       if @last_state != STATE_EGATEWAY
-        Libnotify.show(:summary => @gateway.status, :body => "Maybe a temporary network failure\n#{@gateway.message}", :timeout => 2.5)
+        Libnotify.show(:summary => @gateway.status, :body => "#{@gateway.message}", :timeout => 2.5)
         @last_state = STATE_EGATEWAY
         puts "error 2"
         @ai.set_icon("help_64")
