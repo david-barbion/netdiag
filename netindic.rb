@@ -70,8 +70,11 @@ class Netindic
       @preferences.show
     end
     @indicator_prefs.show
+    @indicator_captive_t = Gtk::CheckMenuItem.new :label => "Disable captive portal"
+    @indicator_captive_t.show
     @indicator_menu.append @indicator_diagnose
     @indicator_menu.append @indicator_captive
+    @indicator_menu.append @indicator_captive_t
     @indicator_menu.append @indicator_prefs
 
     @indicator_exit     = Gtk::MenuItem.new :label => "Exit"
@@ -252,7 +255,9 @@ class Netindic
         else
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
-            @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
+            if !@indicator_captive_t.active?
+              @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
+            end
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)
