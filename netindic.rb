@@ -255,7 +255,7 @@ class Netindic
         else
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
-            if !@indicator_captive_t.active?
+            if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
               @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
             end
           else
