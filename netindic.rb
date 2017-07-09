@@ -10,6 +10,7 @@ require 'netdiag/gateway'
 require 'netdiag/dns'
 require 'netdiag/internet'
 require 'netdiag/preferences'
+require 'netdiag/utils'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
@@ -47,8 +48,7 @@ class Netindic
     @preferences = Netdiag::Preferences.new
 
     @portal_authenticator.signal_connect "portal_closed" do
-      self.prepare_diag
-      self.run_tests
+      @run_sleeper.wakeup
     end
 
     Netdiag::Config.load!("#{ENV['HOME']}/.config/netindic/config.yaml")
@@ -107,6 +107,7 @@ class Netindic
   end
 
   def run
+    @run_sleeper = Netdiag::InterruptibleSleep.new
     Thread.new do loop do
       begin
         self.prepare_diag
@@ -114,7 +115,8 @@ class Netindic
       rescue Exception => e
         puts e.message
       end
-      sleep(20)
+      puts "sleep"
+      @run_sleeper.sleep(20)
     end end
     Gtk.main
   end

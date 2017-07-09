@@ -102,9 +102,7 @@ module Netdiag
         @keep_open=false
         uri = @window.url
         self.close_portal_authenticator_window
-        Thread.new do
-          self.signal_emit("portal_closed", uri)
-        end
+        self.signal_emit("portal_closed", uri)
         true
       end
       @keep_open=true if args[:keep_open]
