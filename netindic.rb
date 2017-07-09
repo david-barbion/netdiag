@@ -115,7 +115,6 @@ class Netindic
       rescue Exception => e
         puts e.message
       end
-      puts "sleep"
       @run_sleeper.sleep(20)
     end end
     Gtk.main
