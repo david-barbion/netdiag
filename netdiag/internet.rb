@@ -52,14 +52,12 @@ module Netdiag
 
         # usually, captive portal is done by
         # 1) sending a 302 to the client, redirecting to the portal, only works when client connect to http (not https)
-        # 2) dns hijacking
+        # 2) dns hijacking (not supported)
         # 3) icmp redirect (not supported)
-        if res[:result].is_a?(Net::HTTPSuccess) 
-          body = JSON.parse(res[:result].body)
-          return false if body["headers"]["Host"] == "httpbin.org"
-        end
-        raise "Get response code #{res[:result]}"
+        return false if res[:result].is_a?(Net::HTTPSuccess) 
+        raise "Get response code #{res[:result]}: #{@error}"
       rescue Exception => e
+        puts "is_captive?(): #{e.message}"
         true
       end
     end
