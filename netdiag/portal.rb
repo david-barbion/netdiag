@@ -5,7 +5,7 @@ RELOAD_MAX_TRIES=50 # this seems a little bit overkill...
 module Netdiag
 
   class WindowPortal < Gtk::Window
-    attr_reader :button_disable
+    attr_reader :pom_disable_button_5
     def initialize(url)
       super
       @url = url
@@ -15,12 +15,28 @@ module Netdiag
       header_bar = Gtk::HeaderBar.new
       header_bar.set_title('Authentication needed')
       header_bar.set_show_close_button(true)
-      icon = Gio::ThemedIcon.new('stop')
+
+      icon = Gio::ThemedIcon.new('format-justify-fill-symbolic')
       image = Gtk::Image.new(:icon => icon, :size => Gtk::IconSize::BUTTON)
-      @button_disable = Gtk::Button.new()
-      @button_disable.add(image)
-      @button_disable.set_tooltip_text('Disable for next 5 minutes')
-      header_bar.pack_end(@button_disable)
+
+
+      @pom_disable_button_5 = Gtk::ModelButton.new()
+      @pom_disable_button_5.set_label('Disable for next 5 minutes')
+
+      grid = Gtk::Grid.new()
+      grid.attach(@pom_disable_button_5, 0, 0, 1, 1)
+
+      pom = Gtk::PopoverMenu.new
+      pom.set_position(Gtk::PositionType::BOTTOM)
+      pom.add(grid)
+      grid.show_all()
+
+      pom_button = Gtk::MenuButton.new()
+      pom_button.set_image(image)
+      pom_button.set_popover(pom)
+
+
+      header_bar.pack_end(pom_button)
 
       @view_context = WebKit2Gtk::WebContext.new
       @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
@@ -106,7 +122,7 @@ module Netdiag
         true
       end
       @keep_open=true if args[:keep_open]
-      @window.button_disable.signal_connect("clicked") do
+      @window.pom_disable_button_5.signal_connect("clicked") do
         @disabled_to = Time.now.to_i + 300
         @keep_open = false
         self.close_portal_authenticator_window
