@@ -80,9 +80,13 @@ module Netdiag
         http.open_timeout = 3
         res = http.request_get(uri.path)
         ret[:result] = res
-      rescue Net::OpenTimeout => e
+      rescue Net::OpenTimeout => e # Connection timeout
         @error = e.message
-        puts "get_uri(): #{e.message}"
+        puts "get_uri(): Net::OpenTimeout #{e.message}"
+        ret[:result] = STATE_INTERNET_EEXPIRED
+      rescue Net::ReadTimeout => e # Connection ok, but too long to respond
+        @error = e.message
+        puts "get_uri(): Net::ReadTimeout #{e.message}"
         ret[:result] = STATE_INTERNET_EEXPIRED
       rescue Exception => e
         @error = e.message
