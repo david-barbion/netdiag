@@ -84,7 +84,11 @@ module Netdiag
       else
         begin
           @analysis.each do |ip,res|
-            message << "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)\n"
+            if res[:rtt].nil?
+              message << "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})\n"
+            else
+              message << "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)\n"
+            end
           end
         rescue Exception => e
           message = "Can't compute analysis: #{e.message}"
@@ -97,7 +101,9 @@ module Netdiag
       return "No IPv4 gateway found" if ( @ipv4_mandatory and !@have_ipv4 ) 
       return "No IPv6 gateway found" if ( @ipv6_mandatory and !@have_ipv6 ) 
       @analysis.each do |ip,res|
-        if res[:rtt] > 0.1
+        if res[:rtt].nil?
+          return "Default gateway unreachable"  
+        elsif res[:rtt] > 0.1
           return "Detected high latency on gateway #{ip}"
         end
       end
