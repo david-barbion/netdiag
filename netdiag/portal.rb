@@ -5,7 +5,7 @@ RELOAD_MAX_TRIES=50 # this seems a little bit overkill...
 module Netdiag
 
   class WindowPortal < Gtk::Window
-    attr_reader :pom_disable_button_5
+    attr_reader :pom_disable_button
     def initialize(url)
       super
       @url = url
@@ -20,21 +20,48 @@ module Netdiag
       image = Gtk::Image.new(:icon => icon, :size => Gtk::IconSize::BUTTON)
 
 
-      @pom_disable_button_5 = Gtk::ModelButton.new()
-      @pom_disable_button_5.set_label('Disable for next 5 minutes')
+      @pom_disable_button = Array.new()
+      @pom_disable_button[0] = Gtk::ModelButton.new()
+      @pom_disable_button[0].set_label('Disable for next 5 minutes')
+      @pom_disable_button[0].halign = Gtk::Align::START
+      @pom_disable_button[1] = Gtk::ModelButton.new()
+      @pom_disable_button[1].set_label('Disable for next 30 minutes')
+      @pom_disable_button[1].halign = Gtk::Align::START
+      @pom_disable_button[2] = Gtk::ModelButton.new()
+      @pom_disable_button[2].set_label('Disable for next hour')
+      @pom_disable_button[2].halign = Gtk::Align::START
+      sep = Gtk::SeparatorMenuItem.new()
+      #@insert_credentials = Gtk::ModelButton.new()
+      #@insert_credentials.set_label('Insert saved credendials')
+      #@insert_credentials.halign = Gtk::Align::START
+      @portal_properties = Gtk::ModelButton.new()
+      @portal_properties.set_label('Portal properties')
+      @portal_properties.halign = Gtk::Align::START
 
-      grid = Gtk::Grid.new()
-      grid.attach(@pom_disable_button_5, 0, 0, 1, 1)
+      @portal_properties.signal_connect("clicked") do
+        self.show_portal_properties
+      end
+
+      menubox = Gtk::Box.new(:vertical)
+      #menubox.pack_start(@insert_credentials)
+      menubox.pack_start(@portal_properties)
+      menubox.pack_start(sep)
+      menubox.pack_start(@pom_disable_button[0])
+      menubox.pack_start(@pom_disable_button[1])
+      menubox.pack_start(@pom_disable_button[2])
+      menubox.margin_left=10
+      menubox.margin_right=10
+      menubox.margin_top=10
+      menubox.margin_bottom=10
+      menubox.show_all()
 
       pom = Gtk::PopoverMenu.new
       pom.set_position(Gtk::PositionType::BOTTOM)
-      pom.add(grid)
-      grid.show_all()
+      pom.add(menubox)
 
       pom_button = Gtk::MenuButton.new()
       pom_button.set_image(image)
       pom_button.set_popover(pom)
-
 
       header_bar.pack_end(pom_button)
 
@@ -84,6 +111,9 @@ module Netdiag
       @view.uri
     end
 
+    def show_portal_properties
+      puts "Current URL: #{self.url}"
+    end
   end
 
   class Portal < GLib::Object
@@ -122,8 +152,18 @@ module Netdiag
         true
       end
       @keep_open=true if args[:keep_open]
-      @window.pom_disable_button_5.signal_connect("clicked") do
+      @window.pom_disable_button[0].signal_connect("clicked") do
         @disabled_to = Time.now.to_i + 300
+        @keep_open = false
+        self.close_portal_authenticator_window
+      end
+      @window.pom_disable_button[1].signal_connect("clicked") do
+        @disabled_to = Time.now.to_i + 1800
+        @keep_open = false
+        self.close_portal_authenticator_window
+      end
+      @window.pom_disable_button[2].signal_connect("clicked") do
+        @disabled_to = Time.now.to_i + 3600
         @keep_open = false
         self.close_portal_authenticator_window
       end
