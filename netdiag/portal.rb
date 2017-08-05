@@ -22,21 +22,21 @@ module Netdiag
 
       @pom_disable_button = Array.new()
       @pom_disable_button[0] = Gtk::ModelButton.new()
-      @pom_disable_button[0].set_label('Disable for next 5 minutes')
-      @pom_disable_button[0].halign = Gtk::Align::START
+      @pom_disable_button[0].text = 'Disable for next 5 minutes'
+      @pom_disable_button[0].halign = Gtk::Align::FILL
       @pom_disable_button[1] = Gtk::ModelButton.new()
-      @pom_disable_button[1].set_label('Disable for next 30 minutes')
-      @pom_disable_button[1].halign = Gtk::Align::START
+      @pom_disable_button[1].text = 'Disable for next 30 minutes'
+      @pom_disable_button[1].halign = Gtk::Align::FILL
       @pom_disable_button[2] = Gtk::ModelButton.new()
-      @pom_disable_button[2].set_label('Disable for next hour')
-      @pom_disable_button[2].halign = Gtk::Align::START
+      @pom_disable_button[2].text = 'Disable for next hour'
+      @pom_disable_button[2].halign = Gtk::Align::FILL
       sep = Gtk::SeparatorMenuItem.new()
       #@insert_credentials = Gtk::ModelButton.new()
       #@insert_credentials.set_label('Insert saved credendials')
       #@insert_credentials.halign = Gtk::Align::START
       @portal_properties = Gtk::ModelButton.new()
-      @portal_properties.set_label('Portal properties')
-      @portal_properties.halign = Gtk::Align::START
+      @portal_properties.text = 'Portal properties'
+      @portal_properties.halign = Gtk::Align::FILL
 
       @portal_properties.signal_connect("clicked") do
         self.show_portal_properties
@@ -44,11 +44,11 @@ module Netdiag
 
       menubox = Gtk::Box.new(:vertical)
       #menubox.pack_start(@insert_credentials)
-      menubox.pack_start(@portal_properties)
-      menubox.pack_start(sep)
-      menubox.pack_start(@pom_disable_button[0])
-      menubox.pack_start(@pom_disable_button[1])
-      menubox.pack_start(@pom_disable_button[2])
+      menubox.add(@portal_properties)
+      menubox.add(sep)
+      menubox.add(@pom_disable_button[0])
+      menubox.add(@pom_disable_button[1])
+      menubox.add(@pom_disable_button[2])
       menubox.margin_left=10
       menubox.margin_right=10
       menubox.margin_top=10
