@@ -3,7 +3,7 @@ require 'webkit2-gtk'
 RELOAD_MAX_TRIES=50 # this seems a little bit overkill...
 
 module Netdiag
-
+  # manage portal window
   class WindowPortal < Gtk::Window
     attr_reader :pom_disable_button
     def initialize(url)
@@ -11,6 +11,10 @@ module Netdiag
       @url = url
       @redirect_url = ''
       @last_url = ''
+      interface
+    end
+
+    def interface
       @vbox = Gtk::Box.new(:vertical)
       header_bar = Gtk::HeaderBar.new
       header_bar.set_title('Authentication needed')
@@ -19,47 +23,42 @@ module Netdiag
       icon = Gio::ThemedIcon.new('format-justify-fill-symbolic')
       image = Gtk::Image.new(:icon => icon, :size => Gtk::IconSize::BUTTON)
 
-
-      @pom_disable_button = Array.new()
-      @pom_disable_button[0] = Gtk::ModelButton.new()
+      @pom_disable_button = []
+      @pom_disable_button[0] = Gtk::ModelButton.new
       @pom_disable_button[0].set_label('Disable for next 5 minutes')
       @pom_disable_button[0].halign = Gtk::Align::START
-      @pom_disable_button[1] = Gtk::ModelButton.new()
+      @pom_disable_button[1] = Gtk::ModelButton.new
       @pom_disable_button[1].set_label('Disable for next 30 minutes')
       @pom_disable_button[1].halign = Gtk::Align::START
-      @pom_disable_button[2] = Gtk::ModelButton.new()
+      @pom_disable_button[2] = Gtk::ModelButton.new
       @pom_disable_button[2].set_label('Disable for next hour')
       @pom_disable_button[2].halign = Gtk::Align::START
-      sep = Gtk::SeparatorMenuItem.new()
-      #@insert_credentials = Gtk::ModelButton.new()
-      #@insert_credentials.set_label('Insert saved credendials')
-      #@insert_credentials.halign = Gtk::Align::START
-      @portal_properties = Gtk::ModelButton.new()
+      sep = Gtk::SeparatorMenuItem.new
+      @portal_properties = Gtk::ModelButton.new
       @portal_properties.set_label('Portal properties')
       @portal_properties.halign = Gtk::Align::START
 
-      @portal_properties.signal_connect("clicked") do
-        self.show_portal_properties
+      @portal_properties.signal_connect('clicked') do
+        show_portal_properties
       end
 
       menubox = Gtk::Box.new(:vertical)
-      #menubox.pack_start(@insert_credentials)
       menubox.pack_start(@portal_properties)
       menubox.pack_start(sep)
       menubox.pack_start(@pom_disable_button[0])
       menubox.pack_start(@pom_disable_button[1])
       menubox.pack_start(@pom_disable_button[2])
-      menubox.margin_left=10
-      menubox.margin_right=10
-      menubox.margin_top=10
-      menubox.margin_bottom=10
-      menubox.show_all()
+      menubox.margin_left = 10
+      menubox.margin_right = 10
+      menubox.margin_top = 10
+      menubox.margin_bottom = 10
+      menubox.show_all
 
       pom = Gtk::PopoverMenu.new
       pom.set_position(Gtk::PositionType::BOTTOM)
       pom.add(menubox)
 
-      pom_button = Gtk::MenuButton.new()
+      pom_button = Gtk::MenuButton.new
       pom_button.set_image(image)
       pom_button.set_popover(pom)
 
@@ -77,7 +76,7 @@ module Netdiag
 
       # stores URI when loading state changed
       # this permits to keep the redirection URL (ie, the captive portal URL)
-      @view.signal_connect("load-changed") do |web_view, load_event, user_data|
+      @view.signal_connect('load-changed') do |web_view, load_event, _user_data|
         @redirect_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::REDIRECTED
         @last_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::FINISHED
       end
@@ -86,16 +85,14 @@ module Netdiag
       # bad response from captive portal
       # if such an error is catched, netdiag will try to reload the portal page
       # for RELOAD_MAX_TRIES
-      @view.signal_connect("load-failed") do |web_view, load_event, failing_uri, error|
-#        puts "load failed, #{@tries} tries left"
-#        puts "URI is #{failing_uri}"
-        self.retry_load_portal
+      @view.signal_connect("load-failed") do |web_view, load_event, failing_uri, _error|
+        retry_load_portal
       end
     end
-   
+
     # reload the current page
     def retry_load_portal
-      return false if @tries == 0
+      return false if @tries.zero?
       @tries -= 1
       @view.load_uri(@url)
     end
@@ -104,7 +101,6 @@ module Netdiag
     def reload_portal
       @tries = RELOAD_MAX_TRIES
       @view.load_uri(@url)
-#      @view.reload_bypass_cache
     end
 
     def url
