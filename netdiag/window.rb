@@ -1,14 +1,13 @@
 #!/usr/bin/env ruby
 require "gtk3"
-require_relative "../netdiag-config"
+require_relative "./config"
 
 module Netdiag
   class Window < Gtk::Window
 
     def initialize
 	super
-        @config = Netdiag::Config.new
-        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{@config.get_theme}"
+        @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{Netdiag::Config.theme}"
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
         @lan_diag_end = false
@@ -25,16 +24,16 @@ module Netdiag
         override_background_color :normal, Gdk::RGBA::new(0.8, 0.8, 0.8, 1)
 
         begin
-            local_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/local.png")
-            gateway_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/gateway.png")
-            internet_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/internet.png")
-            conn_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/connection.png")
-            conn_pb_alt = Gdk::Pixbuf.new(:file => "#{@icon_path}/connection.png")
+            local_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/local.png")
+            gateway_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/gateway.png")
+            internet_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/internet.png")
+            conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
+            conn_pb_alt = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/connection.png")
             conn_pb_alt = conn_pb_alt.saturate_and_pixelate(5.5, true)
-            no_conn_pb = Gdk::Pixbuf.new(:file => "#{@icon_path}/no_connection.png")
-            small_local_pb = local_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_gateway_pb = gateway_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
-            small_internet_pb = internet_pb.scale(128, 128, Gdk::Pixbuf::INTERP_BILINEAR)
+            no_conn_pb = GdkPixbuf::Pixbuf.new(:file => "#{@icon_path}/no_connection.png")
+            small_local_pb = local_pb.scale(128, 128, :bilinear)
+            small_gateway_pb = gateway_pb.scale(128, 128, :bilinear)
+            small_internet_pb = internet_pb.scale(128, 128, :bilinear)
         rescue IOError => e
             puts e
             puts "cannot load images"
@@ -86,6 +85,7 @@ module Netdiag
         end
 
         set_default_size 544, 280
+        self.icon_name='gnome-nettool'
         self.window_position = :center
 	self.open_window
     end
@@ -96,13 +96,20 @@ module Netdiag
 
     def open_window
         self.show_all
+        self.present
         GLib::Timeout.add(1000) do
-          self.change_lan_icon
-          true
+          if !self.change_lan_icon
+            false
+          else
+            true
+          end
         end
         GLib::Timeout.add(1000) do
-          self.change_wan_icon
-          true
+          if !self.change_wan_icon
+            false
+          else
+            true
+          end
         end
     end
 
@@ -120,6 +127,7 @@ module Netdiag
     end
 
     def change_lan_icon
+      return false if @eb_lan.destroyed?
       return if @lan_diag_end
       if @lan_status.nil? # lan status undefined
         self.alternate_lan_icon
@@ -153,6 +161,7 @@ module Netdiag
       end
     end
     def change_wan_icon
+      return false if @eb_wan.destroyed?
       return if @wan_diag_end
       if @wan_status.nil? # wan status undefined
         self.alternate_wan_icon

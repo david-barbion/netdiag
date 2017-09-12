@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=NetIndic
+Comment=Network Diagnosis Indicator
+Type=Application
+Exec=netindic.rb
+Icon=wrench-8x.png
