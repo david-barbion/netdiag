@@ -66,7 +66,7 @@ module Netdiag
 
       @view_context = WebKit2Gtk::WebContext.new
       @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
-      @view = WebKit2Gtk::WebView.new(@view_context)
+      @view = WebKit2Gtk::WebView.new(:context => @view_context)
       @vbox.pack_start(@view, :expand => true, :fill => true)
       self.set_titlebar(header_bar)
       self.add(@vbox)
