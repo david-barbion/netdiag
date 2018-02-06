@@ -3,10 +3,10 @@ require "gtk3"
 require_relative "./config"
 
 module Netdiag
-  class Window < Gtk::Window
+  class DiagWindow < Gtk::Window
 
     def initialize
-	super
+        super
         @icon_path = "#{File.dirname(File.expand_path(__FILE__))}/../static/#{Netdiag::Config.theme}"
         @lan_status = nil # undefined lan status
         @wan_status = nil # undefined wan status
@@ -87,7 +87,7 @@ module Netdiag
         set_default_size 544, 280
         self.icon_name='gnome-nettool'
         self.window_position = :center
-	self.open_window
+        self.open_window
     end
 
     def close_window

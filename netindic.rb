@@ -14,7 +14,7 @@ require 'netdiag/utils'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
-require 'netdiag/window'
+require 'netdiag/diagwindow'
 require 'libnotify'
 
 STATE_OK=0
@@ -108,20 +108,22 @@ class Netindic
 
   def run
     @run_sleeper = Netdiag::InterruptibleSleep.new
-    Thread.new do loop do
-      begin
-        self.prepare_diag
-        self.run_tests
-      rescue Exception => e
-        puts e.message
+    Thread.new {
+      loop do
+        begin
+          self.prepare_diag
+          self.run_tests
+        rescue Exception => e
+          puts e.message
+        end
+        @run_sleeper.sleep(20)
       end
-      @run_sleeper.sleep(20)
-    end end
-    Gtk.main
+    }
+    Gtk.main_with_queue(100)
   end
   
   def show_diag
-    @window = Netdiag::Window.new
+    @window = Netdiag::DiagWindow.new
     Thread.new {
       self.prepare_diag
       # Test local interface LAN
@@ -257,20 +259,50 @@ class Netindic
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
-              @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
+              # FIXME the portal window must be opened in the main thread!!!!!
+              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org') end
             end
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
-              @portal_authenticator.close_portal_authenticator_window
+              # FIXME the portal window must be closed in the main thread!!!!!
+              Gtk.queue do @portal_authenticator.close_portal_authenticator_window end
             end
           end
         end
       end
     end
   end
+end
+
+module Gtk
+	GTK_PENDING_BLOCKS = []
+	GTK_PENDING_BLOCKS_LOCK = Monitor.new
+
+	def Gtk.queue &block
+		if Thread.current == Thread.main
+			block.call
+		else
+			GTK_PENDING_BLOCKS_LOCK.synchronize do
+				GTK_PENDING_BLOCKS << block
+			end
+		end
+	end
+
+	def Gtk.main_with_queue timeout
+    GLib::Timeout.add timeout do
+			GTK_PENDING_BLOCKS_LOCK.synchronize do
+				for block in GTK_PENDING_BLOCKS
+					block.call
+				end
+				GTK_PENDING_BLOCKS.clear
+			end
+			true
+		end
+		Gtk.main
+	end
 end
 
 netindic = Netindic.new
