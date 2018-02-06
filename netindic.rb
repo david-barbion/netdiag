@@ -92,6 +92,8 @@ class Netindic
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}")
     @ai.set_icon("help_64")
 
+    Libnotify.icon_dirs << "#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}"
+
     @last_state=-1
 
     @captive_window_authenticator = nil
@@ -205,42 +207,65 @@ class Netindic
     case state
     when STATE_ELOCAL
       if @last_state != STATE_ELOCAL
-        Libnotify.show(:summary => "No routable address", :body => "No IP address on any interface, check network cable or wifi", :timeout => 2.5)
+        Libnotify.show(:summary => "No routable address",
+                       :body => "No IP address on any interface, check network cable or wifi",
+                       :timeout => 2.5,
+                       :urgency => :critical,
+                       :icon_path => 'error_64.png')
         @last_state = STATE_ELOCAL
         puts "error 1"
         @ai.set_icon("error_64")
       end
     when STATE_EGATEWAY
       if @last_state != STATE_EGATEWAY
-        Libnotify.show(:summary => @gateway.status, :body => "#{@gateway.message}", :timeout => 2.5)
+        Libnotify.show(:summary => @gateway.status,
+                       :body => "#{@gateway.message}",
+                       :timeout => 2.5,
+                       :urgency => :critical,
+                       :icon_path => 'help_64.png')
         @last_state = STATE_EGATEWAY
         puts "error 2"
         @ai.set_icon("help_64")
       end
     when STATE_EDNS
       if @last_state != STATE_EDNS
-        Libnotify.show(:summary => "DNS failure", :body => "The local resolver can't resolve internet names.\nError was #{@dns.error}.", :timeout => 2.5)
+        Libnotify.show(:summary => "DNS failure",
+                       :body => "The local resolver can't resolve internet names.\nError was #{@dns.error}.",
+                       :timeout => 2.5,
+                       :urgency => :critical,
+                       :icon_path => 'warning_64.png')
         @last_state = STATE_EDNS
         puts "error 3"
         @ai.set_icon("warning_64")
       end
     when STATE_EINTERNET
       if @last_state != STATE_EINTERNET
-        Libnotify.show(:summary => "Internet unreachable", :body => "Can't go outside local network, check filtering, gateways or cable/ADSL modem\n#{@internet.error}", :timeout => 2.5)
+        Libnotify.show(:summary => "Internet unreachable",
+                       :body => "Can't go outside local network, check filtering, gateways or cable/ADSL modem\n#{@internet.error}",
+                       :timeout => 2.5,
+                       :urgency => :normal,
+                       :icon_path => 'error_64.png')
         @last_state = STATE_EINTERNET
         puts "error 4"
         @ai.set_icon("error_64")
       end
     when STATE_ECAPTIVE
       if @last_state != STATE_ECAPTIVE
-        Libnotify.show(:summary => "Blocked by a captive portal", :body => "A captive portal blocks access to Internet", :timeout => 2.5)
+        Libnotify.show(:summary => "Blocked by a captive portal",
+                       :body => "A captive portal blocks access to Internet",
+                       :timeout => 2.5,
+                       :urgency => :normal,
+                       :icon_path => 'forbidden_64.png')
         @last_state = STATE_ECAPTIVE
         puts "error 5"
         @ai.set_icon("forbidden_64")
       end
     when STATE_OK
       if @last_state != STATE_OK
-        Libnotify.show(:summary => "Full network connectivity", :timeout => 2.5)
+        Libnotify.show(:summary => "Full network connectivity",
+                       :timeout => 2.5,
+                       :urgency => :low,
+                       :icon_path => "checkmark_64.png")
         @last_state = STATE_OK
         puts "no error"
         @ai.set_icon("checkmark_64")
