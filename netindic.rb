@@ -28,17 +28,21 @@ class Netindic
 
   class Portal < Netdiag::Portal
     def initialize
-      super
+      Gtk.queue do super end
     end
 
+     def open_portal_authenticator_window(args={})
+      Gtk.queue do super end
+     end
+
     def close_portal_authenticator_window
-      super
+      Gtk.queue do super end
       # this should refresh tests
     end
 
     def signal_do_portal_closed(*args)
       puts "portal closed: last uri: #{args[:uri]}"
-      super
+      Gtk.queue do super end
     end
 
   end
@@ -259,16 +263,14 @@ class Netindic
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
-              # FIXME the portal window must be opened in the main thread!!!!!
-              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org') end
+              @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
             end
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
-              # FIXME the portal window must be closed in the main thread!!!!!
-              Gtk.queue do @portal_authenticator.close_portal_authenticator_window end
+              @portal_authenticator.close_portal_authenticator_window
             end
           end
         end
