@@ -101,6 +101,8 @@ module Netdiag
         puts "get_uri(): #{e.message}"
         ret[:result] = STATE_INTERNET_EUNKNOWN
         ret[:error] = e.message
+      ensure
+        http.finish if http.started?
       end
       ret[:rtt] = Time.now - start
       return ret
