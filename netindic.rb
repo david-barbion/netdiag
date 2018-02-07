@@ -16,6 +16,7 @@ require 'netdiag/portal'
 require 'appindicator.so'
 require 'netdiag/diagwindow'
 require 'libnotify'
+require 'logger'
 
 STATE_OK=0
 STATE_ELOCAL=1
@@ -28,26 +29,31 @@ class Netindic
 
   class Portal < Netdiag::Portal
     def initialize
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       Gtk.queue do super end
     end
 
      def open_portal_authenticator_window(args={})
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       Gtk.queue do super end
      end
 
     def close_portal_authenticator_window
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       Gtk.queue do super end
       # this should refresh tests
     end
 
     def signal_do_portal_closed(*args)
-      puts "portal closed: last uri: #{args[:uri]}"
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
+      $logger.info("Portal closed: last uri is #{args[:uri]}")
       Gtk.queue do super end
     end
 
   end
 
   def initialize
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     @portal_authenticator = Portal.new
     @preferences = Netdiag::Preferences.new
 
@@ -106,6 +112,7 @@ class Netindic
   end
 
   def prepare_diag
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     @local.prepare
     @gateway.prepare(@local.default_gateways)
     @dns.prepare
@@ -113,22 +120,27 @@ class Netindic
   end
 
   def run
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     @run_sleeper = Netdiag::InterruptibleSleep.new
     Thread.new {
+      $logger.debug("entering polling thread")
       loop do
         begin
           self.prepare_diag
           self.run_tests
         rescue Exception => e
-          puts e.message
+          $logger.warn("Diag exception report: #{e.message}")
         end
+        $logger.debug('going to sleep')
         @run_sleeper.sleep(20)
       end
     }
+    $logger.debug('starting Gtk.main')
     Gtk.main_with_queue(100)
   end
   
   def show_diag
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     @window = Netdiag::DiagWindow.new
     Thread.new {
       self.prepare_diag
@@ -153,7 +165,7 @@ class Netindic
   
       # Test Gateway reachability
       gw_diag_percent = @gateway.diagnose
-      puts "La qualité d'accès à la/les gateway(s): #{gw_diag_percent}"
+      $logger.debug("Network gateway reachability quality: #{gw_diag_percent}")
       gw_diag = "Quality: #{gw_diag_percent.round(2)}%"
       gw_diag.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
       gw_diag.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
@@ -196,7 +208,7 @@ class Netindic
         internet_diag_info.concat("\nInternet not reachable")
         @window.wan_status=false
       end
-      puts "DNS: #{internet_diag}"
+      logger.debug("DNS: #{internet_diag}")
       @window.internet_diag = internet_diag
       @window.internet_diag_info = internet_diag_info
     }
@@ -204,6 +216,7 @@ class Netindic
   end
 
   def set_state_and_notify(state)
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     case state
     when STATE_ELOCAL
       if @last_state != STATE_ELOCAL
@@ -213,7 +226,7 @@ class Netindic
                        :urgency => :critical,
                        :icon_path => 'error_64.png')
         @last_state = STATE_ELOCAL
-        puts "error 1"
+        $logger.error("Error code 1. No IP address on any interface")
         @ai.set_icon("error_64")
       end
     when STATE_EGATEWAY
@@ -224,7 +237,7 @@ class Netindic
                        :urgency => :critical,
                        :icon_path => 'help_64.png')
         @last_state = STATE_EGATEWAY
-        puts "error 2"
+        $logger.error("Error code 2. Can't reach gateway: #{@gateway.message}")
         @ai.set_icon("help_64")
       end
     when STATE_EDNS
@@ -235,7 +248,7 @@ class Netindic
                        :urgency => :critical,
                        :icon_path => 'warning_64.png')
         @last_state = STATE_EDNS
-        puts "error 3"
+        $logger.error("Error code 3. DNS problem")
         @ai.set_icon("warning_64")
       end
     when STATE_EINTERNET
@@ -246,7 +259,7 @@ class Netindic
                        :urgency => :normal,
                        :icon_path => 'error_64.png')
         @last_state = STATE_EINTERNET
-        puts "error 4"
+        $logger.error("Error code 4. Internet unreachable")
         @ai.set_icon("error_64")
       end
     when STATE_ECAPTIVE
@@ -257,7 +270,7 @@ class Netindic
                        :urgency => :normal,
                        :icon_path => 'forbidden_64.png')
         @last_state = STATE_ECAPTIVE
-        puts "error 5"
+        $logger.error("Error code 5. Blocked by a captive portal")
         @ai.set_icon("forbidden_64")
       end
     when STATE_OK
@@ -267,15 +280,16 @@ class Netindic
                        :urgency => :low,
                        :icon_path => "checkmark_64.png")
         @last_state = STATE_OK
-        puts "no error"
+        $logger.info("No error. All tests ok")
         @ai.set_icon("checkmark_64")
       end
     else
-      puts "unknown state #{state}"
+      $logger.warn("unknown state #{state}")
     end
   end
 
   def run_tests
+    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     if !@local.diagnose
       self.set_state_and_notify(STATE_ELOCAL)
     else 
@@ -332,5 +346,8 @@ module Gtk
 	end
 end
 
+$logger = Logger.new(STDOUT)
+$logger.level = Logger::DEBUG
+$logger.debug('Program started')
 netindic = Netindic.new
 netindic.run
