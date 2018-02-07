@@ -55,7 +55,6 @@ class Netindic
   def initialize
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     @portal_authenticator = Portal.new
-    @preferences = Netdiag::Preferences.new
 
     @portal_authenticator.signal_connect "portal_closed" do
       @run_sleeper.wakeup
@@ -76,7 +75,8 @@ class Netindic
     @indicator_captive.show
     @indicator_prefs = Gtk::MenuItem.new :label => "Preferences"
     @indicator_prefs.signal_connect "activate" do
-      @preferences = Netdiag::Preferences.new(:parent => @ai)
+      $logger.debug('open preferences window')
+      @preferences = Netdiag::Preferences.new
       @preferences.show
     end
     @indicator_prefs.show
