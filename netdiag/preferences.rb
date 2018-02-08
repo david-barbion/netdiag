@@ -1,10 +1,10 @@
-require 'gtk3'
+#require 'gtk3'
 require 'fileutils'
 require 'netdiag/config'
 module Netdiag
-  class Preferences < Gtk::Window
+  class Preferences 
     def initialize
-      super
+      #super
       @builder = Gtk::Builder.new
       @builder.add_from_file("#{File.dirname(File.expand_path(__FILE__))}/../preferences.ui")
 
