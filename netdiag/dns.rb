@@ -1,13 +1,12 @@
 module Netdiag
   class DNS
     def initialize(name_to_resolve)
-      @dns = Resolv::DNS.new
       @count = 0
       @name_to_resolve = name_to_resolve
     end
 
     def prepare
-      true
+      @dns = Resolv::DNS.new
     end
 
     def diagnose
