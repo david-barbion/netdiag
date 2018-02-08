@@ -33,6 +33,14 @@ module Netdiag
       return "Received #{@count} packet(s) from DNS server" 
     end
 
+    def status
+      if @count
+        "DNS test passed"
+      else
+        "DNS test failed, #{count} packet received"
+      end
+    end
+
     def error
       @error
     end

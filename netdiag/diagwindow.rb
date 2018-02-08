@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 require "gtk3"
 require_relative "./config"
+require_relative "./local"
+require_relative "./gateway"
+require_relative "./dns"
+require_relative "./internet"
 
 module Netdiag
   class DiagWindow < Gtk::Window
@@ -17,7 +21,10 @@ module Netdiag
         @internet_diag = 'Checking'
         @lan = true
         @wan = true
+        
         init_ui
+        prepare_tests
+        run_diagnosis
     end
 
     def init_ui
@@ -36,8 +43,8 @@ module Netdiag
             small_internet_pb = internet_pb.scale(128, 128, :bilinear)
         rescue IOError => e
             puts e
-            puts "cannot load images"
-            exit
+            $logger.error("Cannot load images")
+            return(false)
         end
 
         image1 = Gtk::Image.new :pixbuf => small_local_pb
@@ -111,6 +118,49 @@ module Netdiag
             true
           end
         end
+    end
+
+    # prepare test run
+    def prepare_tests
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
+      @local = Netdiag::Local.new
+      @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
+                                      ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+      @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
+      @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
+    end
+
+    def run_diagnosis
+      @local.prepare
+      @gateway.prepare(@local.default_gateways)
+      @dns.prepare
+      @internet.prepare
+
+      @local.diagnose
+      self.local_diag = @local.message
+      self.local_diag_info = self.render_interface_info(@local.local_interfaces)
+      
+      # TODO: 50 should be configurable
+      self.lan_status = @gateway.diagnose >= 50 ? true : false
+      self.gw_diag = @gateway.message(true)
+      self.gw_diag_info = @gateway.status
+
+      @dns.diagnose
+	    self.wan_status = @internet.diagnose >= 50 ? true : false
+      self.internet_diag = "#{@dns.message}\n#{@internet.message}"
+      self.internet_diag_info = "#{@dns.status}\n#{@internet.status}"
+      
+    end
+
+    def render_interface_info(int)
+      text = []
+      int.map { |interface,data|
+        text << "interface #{interface}"
+        data.each { |data_addr|
+          text << " #{data_addr[:address]}/#{data_addr[:netmask]}"
+        }
+      }
+      text.join("\n")
     end
 
     # change lan icon

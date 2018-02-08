@@ -49,8 +49,16 @@ module Netdiag
       @quality
     end
   
+    def message
+      return "Internet rtt is #{@rtt.round(2)}ms, quality is #{@quality}%"
+    end
+
     def status
-      return "Average rtt is #{rtt.round(2)}ms"
+      if @quality >= 50
+        return "Internet test passed"
+      else
+        return "Internet test failed"
+      end
     end
 
     def is_captive?

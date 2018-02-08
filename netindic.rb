@@ -66,7 +66,7 @@ class Netindic
     @indicator_menu = Gtk::Menu.new
     @indicator_diagnose = Gtk::MenuItem.new :label => "Diagnose"
     @indicator_diagnose.signal_connect "activate" do
-      self.show_diag
+      Netdiag::DiagWindow.new
     end
     @indicator_diagnose.show
     @indicator_captive = Gtk::MenuItem.new :label => "Open captive portal authenticator window"
@@ -147,82 +147,6 @@ class Netindic
     Gtk.main_with_queue(100)
   end
   
-  def show_diag
-    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-    @window = Netdiag::DiagWindow.new
-    Thread.new {
-      self.prepare_diag
-      # Test local interface LAN
-      local_diag_info = 'Network interfaces informations:'
-      if (@local.diagnose)
-        status = "Ok"
-      else
-        status = "Error"
-      end
-      @window.local_diag="Status: #{status}"
-      # full text informations
-      @local.local_interfaces.each do |int,data|
-        local_diag_info.concat("\n#{int}")
-        data.each do |data_addr|
-          local_diag_info.concat("\n #{data_addr[:address]}/#{data_addr[:netmask]}")
-        end
-      end
-      @window.local_diag_info=local_diag_info
-      #puts local_diag_info
-      #local.raise_diag
-  
-      # Test Gateway reachability
-      gw_diag_percent = @gateway.diagnose
-      $logger.debug("Network gateway reachability quality: #{gw_diag_percent}")
-      gw_diag = "Quality: #{gw_diag_percent.round(2)}%"
-      gw_diag.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
-      gw_diag.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
-      @window.gw_diag=gw_diag
-      # stop lan blinking
-      if gw_diag_percent >= 50
-        @window.lan_status=(true)
-      else
-        @window.lan_status=(false)
-      end
-      if @local.default_gateways.length > 1
-        gw_diag_info = 'Gateways addresses:'
-      else
-        gw_diag_info = 'Gateway address:'
-      end
-      @local.default_gateways.each do |gw|
-        gw_diag_info.concat("\n#{gw} quality: #{@gateway.get_gw_quality(gw).round(2)}%")
-      end
-      gw_diag_info.concat("\nMissing IPv4 gateway") if @gateway.is_ipv4_gateway_missing
-      gw_diag_info.concat("\nMissing IPv6 gateway") if @gateway.is_ipv6_gateway_missing
-      @window.gw_diag_info=gw_diag_info
-  
-      # test internet access
-      internet_dns_diag = @dns.diagnose
-      internet_net_diag = @internet.diagnose
-  
-      if internet_dns_diag
-        internet_diag="DNS working"
-        internet_diag_info = @dns.message
-      else
-        internet_diag="DNS not working properly"
-        internet_diag_info = "DNS is not working"
-      end
-      if internet_net_diag > 50
-        internet_diag.concat("\nQuality: #{internet_net_diag}%")
-        internet_diag_info.concat("\nInternet reachable")
-        @window.wan_status=true
-      else
-        internet_diag.concat("\nQuality: #{internet_net_diag}%")
-        internet_diag_info.concat("\nInternet not reachable")
-        @window.wan_status=false
-      end
-      logger.debug("DNS: #{internet_diag}")
-      @window.internet_diag = internet_diag
-      @window.internet_diag_info = internet_diag_info
-    }
-    
-  end
-
   def set_state_and_notify(state)
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     case state

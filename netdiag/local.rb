@@ -6,6 +6,7 @@ module Netdiag
     attr_reader :routed_addresses
     attr_reader :routes
     attr_reader :default_gateways
+    attr_reader :message
     def initialize
     end
   
@@ -21,8 +22,10 @@ module Netdiag
     # one IPv4 and optionaly IPv6
     def diagnose
       if @routed_addresses.count >= 1 and @default_gateways.count >= 1
+        @message = @routed_addresses.count == 1 ? "Found #{@routed_addresses.count} address" : "Found #{@routed_addresses.count} addresses"
         return true
       else
+        @message = "No routed address found"
         return false
       end
     end

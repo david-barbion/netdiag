@@ -75,26 +75,26 @@ module Netdiag
       @quality
     end
   
-    def message
-      message = String.new
+    def message(short=false)
+      message = []
       if @ipv4_mandatory and !@have_ipv4 
-        message << "IPv4 gateway not found, check your local configuration or DHCP server\n"
+        message << (short ? "IPv4 gateway not found" : "IPv4 gateway not found, check your local configuration or DHCP server")
       elsif @ipv6_mandatory and !@have_ipv6
-        message << "IPv6 gateway not found, check your local configuration or network advertiser\n"
+        message << (short ? "IPv6 gateway not found" : "IPv6 gateway not found, check your local configuration or network advertiser")
       else
         begin
           @analysis.each do |ip,res|
             if res[:rtt].nil?
-              message << "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})\n"
+              message << (short==true ? "#{ip} failed" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})")
             else
-              message << "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)\n"
+              message << (short==true ? "#{ip} (quality: #{res[:quality].round(2)}%)" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)")
             end
           end
         rescue Exception => e
-          message = "Can't compute analysis: #{e.message}"
+          message << "Can't compute analysis: #{e.message}"
         end
       end
-      return message
+      return message.join("\n");
     end
 
     def status
@@ -111,7 +111,7 @@ module Netdiag
         return "Default gateway partially reachable (packet loss)"
       end
 
-      return "Gateway problem"
+      return "Gateway test passed"
     end
 
     def raise_diag
