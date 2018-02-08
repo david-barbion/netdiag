@@ -1,8 +1,8 @@
 require 'fileutils'
 require 'netdiag/config'
 module Netdiag
-  class Preferences
-    def initialize(options={})
+  class Preferences 
+    def initialize
       @builder = Gtk::Builder.new
       @builder.add_from_file("#{File.dirname(File.expand_path(__FILE__))}/../ui/preferences.ui")
 
@@ -47,6 +47,7 @@ module Netdiag
                     }
       }
       Netdiag::Config.save("#{ENV['HOME']}/.config/netindic/config.yaml", _settings)
+      Netdiag::Config.load!("#{ENV['HOME']}/.config/netindic/config.yaml")
       self.close
     end
 
