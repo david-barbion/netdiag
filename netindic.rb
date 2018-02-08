@@ -10,6 +10,7 @@ require 'netdiag/gateway'
 require 'netdiag/dns'
 require 'netdiag/internet'
 require 'netdiag/preferences'
+require 'netdiag/conninfo'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
@@ -64,6 +65,12 @@ class Netindic
       @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => 'http://httpbin.org')
     end
     @indicator_captive.show
+    @indicator_conninfo = Gtk::MenuItem.new :label => "Show connection informations"
+    @indicator_conninfo.signal_connect "activate" do
+      @conninfo = Netdiag::Conninfo.new(@local, @gateway, @internet)
+      @conninfo.show
+    end
+    @indicator_conninfo.show
     @indicator_prefs = Gtk::MenuItem.new :label => "Preferences"
     @indicator_prefs.signal_connect "activate" do
       @preferences = Netdiag::Preferences.new(:parent => @ai)
@@ -73,6 +80,7 @@ class Netindic
     @indicator_captive_t = Gtk::CheckMenuItem.new :label => "Disable captive portal"
     @indicator_captive_t.show
     @indicator_menu.append @indicator_diagnose
+    @indicator_menu.append @indicator_conninfo
     @indicator_menu.append @indicator_captive
     @indicator_menu.append @indicator_captive_t
     @indicator_menu.append @indicator_prefs
