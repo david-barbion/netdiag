@@ -62,22 +62,34 @@ module Netdiag
     end
 
     def is_captive?
-      begin
-        res = self.get_uri
-        # internet can't be reached or test server unavailable
-        # in this case, a captive portal cannot be detected, let's give a chance
-        return false if res[:result] == STATE_INTERNET_EEXPIRED or 
-                        res[:result].is_a?(Net::HTTPServiceUnavailable)
+      # usually, captive portal is done by
+      # 1) sending a 302 to the client, redirecting to the portal, only works when client connect to http (not https)
+      # 2) dns hijacking (not supported)
+      # 3) icmp redirect (not supported)
+      # 4) mitm
 
-        # usually, captive portal is done by
-        # 1) sending a 302 to the client, redirecting to the portal, only works when client connect to http (not https)
-        # 2) dns hijacking (not supported)
-        # 3) icmp redirect (not supported)
-        return false if res[:result].is_a?(Net::HTTPSuccess) 
-        raise "Get response code #{res[:result]}: #{@error}"
-      rescue Exception => e
-        puts "is_captive?(): #{e.message}"
-        true
+      res = self.get_uri('http://httpbin.org/get?portal=1')
+      # internet can't be reached or test server unavailable
+      # in this case, a captive portal cannot be detected, let's give a chance
+      return false if res[:result] == STATE_INTERNET_EEXPIRED or 
+                      res[:result].is_a?(Net::HTTPServiceUnavailable)
+
+      # detect absence of mitm (4)
+      if res[:result].is_a?(Net::HTTPSuccess)
+        json_response = parse_json_response(res[:result].body)
+        return false if json_response.has_key?('args') && (json_response['args']['portal'] == '1')
+      end
+
+      # detected 302 (1) or 200 on mitm (4)
+      $logger.warn("Got response code #{res[:result].code}")
+      return  true
+    end
+
+    def parse_json_response(body)
+      begin
+        JSON.parse(body)
+      rescue
+        { }
       end
     end
 
@@ -89,15 +101,15 @@ module Netdiag
       raise "Host not reachable" if !@quality
     end
   
-    def get_uri
+    def get_uri(url=@url)
       ret = Hash.new
       start = Time.now
       begin
-        uri = URI(@url)
+        uri = URI(url)
         http = Net::HTTP.new(uri.host,uri.port)
         http.read_timeout = 3
         http.open_timeout = 3
-        res = http.request_get(uri.path)
+        res = http.request_get(uri)
         ret[:result] = res
       rescue Net::OpenTimeout => e # Connection timeout
         puts "get_uri(): Net::OpenTimeout #{e.message}"
