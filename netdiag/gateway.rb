@@ -48,7 +48,7 @@ module Netdiag
         quality = (((res[:count].to_f-res[:failure].to_f)/res[:count].to_f)*100.0)
         global_quality += quality
         if res[:rtt].nil?
-          puts "ping error for #{res[:ip]}"
+          $logger.error("ping error for #{res[:ip]}")
         elsif res[:rtt] >= 0.05 and res[:rtt] < 0.1
           quality = quality / 1.2
         elsif res[:rtt] >= 0.1 and res[:rtt] < 1
@@ -62,10 +62,10 @@ module Netdiag
         case res[:ip].gsub(/%.*/, '')
         when Resolv::IPv4::Regex
           @ipv4_quality += quality
-          @analysis[res[:ip]][:quality] = @ipv4_quality
+          @analysis[res[:ip]][:quality] = quality
         when Resolv::IPv6::Regex
           @ipv6_quality += quality
-          @analysis[res[:ip]][:quality] = @ipv6_quality
+          @analysis[res[:ip]][:quality] = quality
         end
       end
       return 0 if count == 0 
