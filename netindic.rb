@@ -31,24 +31,24 @@ class Netindic
   class Portal < Netdiag::Portal
     def initialize
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      Gtk.queue do super end
+      super
     end
 
      def open_portal_authenticator_window(args={})
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      Gtk.queue do super end
+      super
      end
 
     def close_portal_authenticator_window
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      Gtk.queue do super end
+      super
       # this should refresh tests
     end
 
     def signal_do_portal_closed(*args)
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       $logger.info("Portal closed: last uri is #{args[:uri]}")
-      Gtk.queue do super end
+      super
     end
 
   end
@@ -134,8 +134,8 @@ class Netindic
       $logger.debug("entering polling thread")
       loop do
         begin
-          self.prepare_diag
-          self.run_tests
+          Gtk.queue do self.prepare_diag end
+          Gtk.queue do self.run_tests end
         rescue Exception => e
           $logger.warn("Diag exception report: #{e.message}")
         end
