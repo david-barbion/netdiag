@@ -131,6 +131,7 @@ module Netdiag
     end
 
     def run_diagnosis
+      Thread.new {
       @local.prepare
       @gateway.prepare(@local.default_gateways)
       @dns.prepare
@@ -142,14 +143,14 @@ module Netdiag
       
       # TODO: 50 should be configurable
       self.lan_status = @gateway.diagnose >= 50 ? true : false
-      self.gw_diag = @gateway.message(true)
-      self.gw_diag_info = @gateway.status
+      self.gw_diag = @gateway.status
+      self.gw_diag_info = @gateway.message
 
       @dns.diagnose
 	    self.wan_status = @internet.diagnose >= 50 ? true : false
-      self.internet_diag = "#{@dns.message}\n#{@internet.message}"
-      self.internet_diag_info = "#{@dns.status}\n#{@internet.status}"
-      
+      self.internet_diag = "#{@dns.status}\n#{@internet.status}"
+      self.internet_diag_info = "#{@dns.message}\n#{@internet.message}"
+      }
     end
 
     def render_interface_info(int)
