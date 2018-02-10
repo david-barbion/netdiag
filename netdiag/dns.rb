@@ -7,6 +7,7 @@ module Netdiag
 
     def prepare
       @dns = Resolv::DNS.new
+      @dns.timeouts = 2 # if your DNS takes too long to response, consider it down
     end
 
     def diagnose
@@ -25,6 +26,7 @@ module Netdiag
         @error << "#{e.message}\n"
       end
       @count = count
+      @dns.close
       return false if count==0
       return true
     end
