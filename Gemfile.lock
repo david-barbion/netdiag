@@ -9,7 +9,7 @@ GEM
     cairo-gobject (3.2.1)
       cairo
       glib2 (= 3.2.1)
-    ffi (1.9.18)
+    ffi (1.9.21)
     gdk3 (3.2.1)
       cairo-gobject (= 3.2.1)
       gdk_pixbuf2 (= 3.2.1)
