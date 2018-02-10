@@ -4,6 +4,7 @@ DESKTOP_FILE=netindic.desktop
 AUTOSTART_DIR="$HOME/.config/autostart/"
 INSTALL=/usr/bin/install
 SED=/bin/sed
+BUNDLER=/usr/bin/bundler
 CURRENT_DIR=$(pwd)
 NETINDIC_EXEC="$CURRENT_DIR/netindic.rb"
 NETINDIC_ICON="$CURRENT_DIR/wrench-8x.png"
@@ -36,7 +37,26 @@ ask_confirmation() {
   esac
 }
 
+help_install_bundler() {
+  cat <<EOF >&2
+bundler not found
+netindic relies on ruby gems to be installed
+install bundler, then restart this script
+
+it can be installed with:
+Debian and derivative: sudo apt install bundler
+EOF
+}
+
+run_bundler() {
+  $BUNDLER update
+}
+
 #######################################
+# install prerequisites
+echo "Installing prerequisites"
+[ -f "$BUNDLER" ] && run_bundler || help_install_bundler
+
 if ask_confirmation; then
   if ! copy_file "$DESKTOP_FILE" "$AUTOSTART_DIR"; then
     echo "cannot install desktop file to $AUTOSTART_DIR" >&2
