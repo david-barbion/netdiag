@@ -241,7 +241,7 @@ class Netindic
               self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
-              @portal_authenticator.close_portal_authenticator_window
+              @portal_authenticator.close_portal_authenticator_window if @portal_authenticator.is_opened?
             end
           end
         end
