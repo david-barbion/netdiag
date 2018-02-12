@@ -31,24 +31,24 @@ class Netindic
   class Portal < Netdiag::Portal
     def initialize
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
     end
 
      def open_portal_authenticator_window(args={})
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
      end
 
     def close_portal_authenticator_window
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
       # this should refresh tests
     end
 
     def signal_do_portal_closed(*args)
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       $logger.info("Portal closed: last uri is #{args[:uri]}")
-      super
+      Gtk.queue do super end
     end
 
   end
@@ -134,8 +134,8 @@ class Netindic
       $logger.debug("entering polling thread")
       loop do
         begin
-          Gtk.queue do self.prepare_diag end
-          Gtk.queue do self.run_tests end
+          self.prepare_diag
+          self.run_tests
         rescue Exception => e
           $logger.warn("Diag exception report: #{e.message}")
         end
@@ -234,14 +234,14 @@ class Netindic
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
-              @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
+              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org') end
             end
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
-              @portal_authenticator.close_portal_authenticator_window if @portal_authenticator.is_opened?
+              Gtk.queue do @portal_authenticator.close_portal_authenticator_window if @portal_authenticator.is_opened? end
             end
           end
         end
