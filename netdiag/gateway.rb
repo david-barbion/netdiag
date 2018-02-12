@@ -48,7 +48,7 @@ module Netdiag
         quality = (((res[:count].to_f-res[:failure].to_f)/res[:count].to_f)*100.0)
         global_quality += quality
         if res[:rtt].nil?
-          $logger.error("ping error for #{res[:ip]}")
+          $logger.error("#{self.class.name}::#{__method__.to_s} ping error for #{res[:ip]}")
         elsif res[:rtt] >= 0.05 and res[:rtt] < 0.1
           quality = quality / 1.2
         elsif res[:rtt] >= 0.1 and res[:rtt] < 1
@@ -101,13 +101,15 @@ module Netdiag
       return "No IPv4 gateway found" if ( @ipv4_mandatory and !@have_ipv4 ) 
       return "No IPv6 gateway found" if ( @ipv6_mandatory and !@have_ipv6 ) 
       @analysis.each do |ip,res|
-        if res[:rtt].nil?
-          return "Default gateway unreachable"  
-        elsif res[:rtt] > 0.1
-          return "Detected high latency on gateway #{ip}"
+        if (@ipv4_mandatory and ip =~ Resolv::IPv4::Regex) or (@ipv6_mandatory and ip =~ Resolv::IPv6::Regex)
+          if res[:rtt].nil? and 
+            return "Default gateway unreachable"  
+          elsif res[:rtt] > 0.1
+            return "Detected high latency on gateway #{ip}"
+          end
         end
       end
-      if @quality < 50
+      if @quality <= 50
         return "Default gateway partially reachable (packet loss)"
       end
 
@@ -121,6 +123,7 @@ module Netdiag
     def ping_gw
       ping_gw = []
       @gateway_list.each do |gw|
+        $logger.debug("#{self.class.name}::#{__method__.to_s} sending ping to '#{gw}'")
         ping = PingIP.new(gw, @ping_count)
         ping_gw << ping.do
       end
