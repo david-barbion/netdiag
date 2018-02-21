@@ -8,14 +8,15 @@ STATE_INTERNET_EEXPIRED=100
 
 module Netdiag
   class Internet
-    def initialize(url='http://httpbin.org/get')
-      @url = url
+    def initialize
       @count = 5
       @ret = Hash.new
       @last_rtt = 0
     end
   
     def prepare
+      @url        = Netdiag::Config.test_url
+      @portal_url = Netdiag::Config.portal_test_url
       # clean last error
       @error = String.new
       true
@@ -68,7 +69,7 @@ module Netdiag
       # 3) icmp redirect (not supported)
       # 4) mitm
 
-      res = self.get_uri('http://httpbin.org/get?portal=1')
+      res = self.get_uri(@portal_url)
       # internet can't be reached or test server unavailable
       # in this case, a captive portal cannot be detected, let's give a chance
       return false if res[:result] == STATE_INTERNET_EEXPIRED or 

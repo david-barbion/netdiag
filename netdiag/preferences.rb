@@ -13,6 +13,7 @@ module Netdiag
       @ipv6_mandatory = @builder.get_object('ipv6_mandatory')
       @test_dns = @builder.get_object('test_dns')
       @test_url = @builder.get_object('test_url')
+      @portal_test_url = @builder.get_object('portal_test_url')
       self.insert_config
     end
 
@@ -30,6 +31,7 @@ module Netdiag
       end
       @test_dns.text = Netdiag::Config.test_dns
       @test_url.text = Netdiag::Config.test_url
+      @portal_test_url.text = Netdiag::Config.portal_test_url
       @ipv4_mandatory.active = Netdiag::Config.gateways[:ipv4_mandatory]
       @ipv6_mandatory.active = Netdiag::Config.gateways[:ipv6_mandatory]
     end
@@ -38,13 +40,14 @@ module Netdiag
     # save clicked
     def save
       _settings = {
-        :theme    => @theme.active_text,
-        :test_url => @test_url.text,
-        :test_dns => @test_dns.text,
-        :gateways => {
-                      :ipv4_mandatory => @ipv4_mandatory.active?,
-                      :ipv6_mandatory => @ipv6_mandatory.active?,
-                    }
+        :theme           => @theme.active_text,
+        :test_url        => @test_url.text,
+        :portal_test_url => @portal_test_url.text,
+        :test_dns        => @test_dns.text,
+        :gateways        => {
+                             :ipv4_mandatory => @ipv4_mandatory.active?,
+                             :ipv6_mandatory => @ipv6_mandatory.active?,
+                           }
       }
       Netdiag::Config.save("#{ENV['HOME']}/.config/netindic/config.yaml", _settings)
       Netdiag::Config.load!("#{ENV['HOME']}/.config/netindic/config.yaml")

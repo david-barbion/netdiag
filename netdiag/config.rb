@@ -71,13 +71,14 @@ module Netdiag
   
     # Default settings here
     @_settings = {
-      :theme    => 'iconic',
-      :test_url => 'http://httpbin.org/get',
-      :test_dns => 'root-servers.org',
-      :gateways => {
-                    :ipv4_mandatory => true,
-                    :ipv6_mandatory => true,
-                  }
+      :theme           => 'iconic',
+      :test_url        => 'http://httpbin.org/get',
+      :portal_test_url => 'http://httpbin.org/get?portal=1',
+      :test_dns        => 'root-servers.org',
+      :gateways        => {
+                           :ipv4_mandatory => true,
+                           :ipv6_mandatory => true,
+                         }
     }
     attr_reader :_settings
   

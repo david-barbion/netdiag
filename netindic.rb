@@ -112,10 +112,9 @@ class Netindic
 
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
-    @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
-                                    ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+    @gateway = Netdiag::Gateway.new
     @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
-    @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
+    @internet = Netdiag::Internet.new
 
   end
 
@@ -138,6 +137,7 @@ class Netindic
           self.run_tests
         rescue Exception => e
           $logger.warn("Diag exception report: #{e.message}")
+          puts e.backtrace
         end
         $logger.debug('going to sleep')
         @run_sleeper.sleep(20)
