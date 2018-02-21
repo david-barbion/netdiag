@@ -124,8 +124,7 @@ module Netdiag
     def prepare_tests
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       @local = Netdiag::Local.new
-      @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
-                                      ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+      @gateway = Netdiag::Gateway.new
       @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
       @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
     end
