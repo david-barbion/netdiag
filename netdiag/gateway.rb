@@ -1,12 +1,11 @@
 require 'netdiag/pingip'
+require_relative './config'
 module Netdiag
   class Gateway
     attr_reader :ipv4_quality, :ipv6_quality, :have_ipv4, :have_ipv6, :ipv4_mandatory, :ipv6_mandatory
 
     def initialize(args={})
       @ping_count = args[:ping_count] ? args[:ping_count] : 5
-      @ipv4_mandatory = args[:ipv4_mandatory] ? args[:ipv4_mandatory] : true
-      @ipv6_mandatory = args[:ipv6_mandatory] ? args[:ipv6_mandatory] : true
       @analysis = Hash.new
     end
   
@@ -15,6 +14,8 @@ module Netdiag
       @have_ipv6 = false
       @ipv4_quality = 0
       @ipv6_quality = 0
+      @ipv4_mandatory = Netdiag::Config.gateways[:ipv4_mandatory]
+      @ipv6_mandatory = Netdiag::Config.gateways[:ipv6_mandatory]
       @gateway_list = gateway_list
       @gateway_list.each do |gw|
         case gw.gsub(/%.*/, '')
