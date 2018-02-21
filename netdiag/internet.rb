@@ -81,8 +81,13 @@ module Netdiag
       end
 
       # detected 302 (1) or 200 on mitm (4)
-      $logger.warn("Got response code #{res[:result].code}")
-      return  true
+      if res[:result].is_a?(Net::HTTPResponse)
+        $logger.warn("Got response code #{res[:result].code}")
+        return true
+      else
+        $logger.warn("get_uri returned an error")
+        return false
+      end
     end
 
     def parse_json_response(body)
