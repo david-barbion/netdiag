@@ -12,6 +12,7 @@ require 'netdiag/internet'
 require 'netdiag/preferences'
 require 'netdiag/conninfo'
 require 'netdiag/utils'
+require 'netdiag/nmlistener'
 require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
@@ -55,6 +56,7 @@ class Netindic
 
   def initialize
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
+    @run_sleeper = Netdiag::InterruptibleSleep.new
     @portal_authenticator = Portal.new
 
     @portal_authenticator.signal_connect "portal_closed" do
@@ -117,25 +119,20 @@ class Netindic
     @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
     @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
 
-  end
-
-  def prepare_diag
-    $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-    @local.prepare
-    @gateway.prepare(@local.default_gateways)
-    @dns.prepare
-    @internet.prepare
+    @nmlistener = Netdiag::NMListener.new
+    @nmlistener.set_callback {
+      @run_sleeper.wakeup
+    }
+    @nmlistener.run
   end
 
   def run
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-    @run_sleeper = Netdiag::InterruptibleSleep.new
     Thread.new {
       $logger.debug("entering polling thread")
       loop do
         begin
-          Gtk.queue do self.prepare_diag end
-          Gtk.queue do self.run_tests end
+          self.run_tests
         rescue Exception => e
           $logger.warn("Diag exception report: #{e.message}")
         end
@@ -222,15 +219,19 @@ class Netindic
 
   def run_tests
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
+    @local.prepare
     if !@local.diagnose
       self.set_state_and_notify(STATE_ELOCAL)
     else 
+      @gateway.prepare(@local.default_gateways)
       if @gateway.diagnose < 50
         self.set_state_and_notify(STATE_EGATEWAY)
       else
+        @dns.prepare
         if !@dns.diagnose
           self.set_state_and_notify(STATE_EDNS)
         else
+          @internet.prepare
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
