@@ -126,7 +126,7 @@ module Netdiag
       @local = Netdiag::Local.new
       @gateway = Netdiag::Gateway.new
       @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
-      @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
+      @internet = Netdiag::Internet.new
     end
 
     def run_diagnosis
