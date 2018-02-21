@@ -87,6 +87,8 @@ module Netdiag
       @view.signal_connect("load-failed") do |web_view, load_event, failing_uri, _error|
         retry_load_portal
       end
+
+      hide_on_delete
     end
 
     # reload the current page
