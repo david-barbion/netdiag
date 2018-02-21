@@ -6,9 +6,8 @@ module Netdiag
   # manage portal window
   class WindowPortal < Gtk::Window
     attr_reader :pom_disable_button
-    def initialize(url)
+    def initialize
       super
-      @url = url
       @redirect_url = ''
       @last_url = ''
       interface
@@ -98,9 +97,10 @@ module Netdiag
     end
 
     # initiate a new load
-    def reload_portal
+    def load_portal(uri)
+      @url = uri
       @tries = RELOAD_MAX_TRIES
-      @view.load_uri(@url)
+      @view.load_uri(uri)
     end
 
     def url
@@ -125,21 +125,16 @@ module Netdiag
     def initialize
       super
       @keep_open=false
-      @opened = false
       @disabled_to = 0
+      @window = Netdiag::WindowPortal.new
     end
 
     def is_disabled?
-      if Time.now.to_i < @disabled_to
-        true
-      else
-        false
-      end
+      Time.now.to_i < @disabled_to ? true : false
     end
 
     def open_portal_authenticator_window(args={})
       return if self.is_opened?
-      @window = Netdiag::WindowPortal.new(args[:uri])
       @window.signal_connect("delete-event") do
         @keep_open=false
         uri = @window.url
@@ -163,26 +158,24 @@ module Netdiag
         @keep_open = false
         self.close_portal_authenticator_window
       end
-      @window.reload_portal
+      @window.load_portal(args[:uri])
       # this hack brings the portal window authenticator to front
       @window.set_keep_above(true)
       @window.set_keep_above(false)
       @window.show_all
-      @opened = true
     end
 
     def close_portal_authenticator_window
       return if self.is_closed? or @keep_open
-      @window.destroy
-      @opened = false
+      @window.hide
     end
 
     def is_closed?
-      !@opened
+      !@window.visible?
     end
 
     def is_opened?
-      @opened
+      @window.visible?
     end
 
     private
