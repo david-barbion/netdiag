@@ -43,7 +43,7 @@ module Netdiag
             small_internet_pb = internet_pb.scale(128, 128, :bilinear)
         rescue IOError => e
             puts e
-            $logger.error("Cannot load images")
+            $logger.error("#{self.class.name}::#{__method__.to_s} Cannot load images")
             return(false)
         end
 
@@ -124,10 +124,9 @@ module Netdiag
     def prepare_tests
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       @local = Netdiag::Local.new
-      @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
-                                      ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+      @gateway = Netdiag::Gateway.new
       @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
-      @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
+      @internet = Netdiag::Internet.new
     end
 
     def run_diagnosis
@@ -142,8 +141,9 @@ module Netdiag
       self.local_diag_info = self.render_interface_info(@local.local_interfaces)
       
       # TODO: 50 should be configurable
-      self.lan_status = @gateway.diagnose >= 50 ? true : false
-      self.gw_diag = @gateway.status
+      gateway_quality = @gateway.diagnose 
+      self.lan_status = gateway_quality >= 50 ? true : false
+      self.gw_diag = "#{@gateway.status}\nquality: #{gateway_quality}%"
       self.gw_diag_info = @gateway.message
 
       @dns.diagnose

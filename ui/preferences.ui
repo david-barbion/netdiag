@@ -163,12 +163,17 @@
         </child>
       </object>
     </child>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
   </object>
->>>>>>> conn_info_quickview:ui/preferences.ui
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="icon_name">gnome-settings</property>
     <child>
+      <placeholder/>
+    </child>
+    <child type="titlebar">
       <placeholder/>
     </child>
   </object>
@@ -449,53 +454,66 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="valign">start</property>
                 <property name="margin_left">6</property>
                 <property name="margin_right">6</property>
                 <property name="margin_top">6</property>
                 <property name="margin_bottom">6</property>
-                <property name="orientation">vertical</property>
+                <property name="row_spacing">5</property>
+                <property name="column_spacing">5</property>
+                <property name="column_homogeneous">True</property>
+                <property name="baseline_row">1</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_right">3</property>
-                        <property name="label" translatable="yes">Test URL:</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="test_url">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="margin_left">3</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
+                    <property name="label" translatable="yes">Test URL:</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Portal test URL:</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="test_url">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="portal_test_url">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="position">4</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child type="tab">

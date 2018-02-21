@@ -32,24 +32,24 @@ class Netindic
   class Portal < Netdiag::Portal
     def initialize
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
     end
 
      def open_portal_authenticator_window(args={})
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
      end
 
     def close_portal_authenticator_window
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
-      super
+      Gtk.queue do super end
       # this should refresh tests
     end
 
     def signal_do_portal_closed(*args)
       $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       $logger.info("Portal closed: last uri is #{args[:uri]}")
-      super
+      Gtk.queue do super end
     end
 
   end
@@ -114,10 +114,9 @@ class Netindic
 
     @captive_window_authenticator = nil
     @local = Netdiag::Local.new
-    @gateway = Netdiag::Gateway.new(ipv4_mandatory: Netdiag::Config.gateways[:ipv4_mandatory],
-                                    ipv6_mandatory: Netdiag::Config.gateways[:ipv6_mandatory])
+    @gateway = Netdiag::Gateway.new
     @dns = Netdiag::DNS.new(Netdiag::Config.test_dns)
-    @internet = Netdiag::Internet.new(Netdiag::Config.test_url)
+    @internet = Netdiag::Internet.new
 
     @nmlistener = Netdiag::NMListener.new
     @nmlistener.set_callback {
@@ -135,6 +134,7 @@ class Netindic
           self.run_tests
         rescue Exception => e
           $logger.warn("Diag exception report: #{e.message}")
+          puts e.backtrace
         end
         $logger.debug('going to sleep')
         @run_sleeper.sleep(20)
@@ -235,14 +235,14 @@ class Netindic
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
-              @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org')
+              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org') end
             end
           else
             if @internet.diagnose < 50
               self.set_state_and_notify(STATE_EINTERNET)
             else
               self.set_state_and_notify(STATE_OK)
-              @portal_authenticator.close_portal_authenticator_window if @portal_authenticator.is_opened?
+              Gtk.queue do @portal_authenticator.close_portal_authenticator_window if @portal_authenticator.is_opened? end
             end
           end
         end
