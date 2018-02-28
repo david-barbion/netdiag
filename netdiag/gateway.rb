@@ -85,10 +85,12 @@ module Netdiag
       else
         begin
           @analysis.each do |ip,res|
-            if res[:rtt].nil?
-              message << (short==true ? "#{ip} failed" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})")
-            else
-              message << (short==true ? "#{ip} (quality: #{res[:quality].round(2)}%)" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)")
+            if (@ipv4_mandatory and ip =~ Resolv::IPv4::Regex) or (@ipv6_mandatory and ip =~ Resolv::IPv6::Regex)
+              if res[:rtt].nil?
+                message << (short==true ? "#{ip} failed" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})")
+              else
+                message << (short==true ? "#{ip} (quality: #{res[:quality].round(2)}%)" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)")
+              end
             end
           end
         rescue Exception => e
