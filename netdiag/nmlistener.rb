@@ -70,6 +70,7 @@ module Netdiag
     # start dbus loop
     def run
       Thread.new {
+        Thread.current[:name] = "dbus"
         while true
           @loop = DBus::Main.new
           @loop << @bus

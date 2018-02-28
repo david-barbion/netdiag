@@ -131,6 +131,7 @@ module Netdiag
 
     def run_diagnosis
       Thread.new {
+        Thread.current[:name] = "diagnose"
       @local.prepare
       @gateway.prepare(@local.default_gateways)
       @dns.prepare
