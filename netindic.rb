@@ -73,7 +73,7 @@ class Netindic
     @indicator_diagnose.show
     @indicator_captive = Gtk::MenuItem.new :label => "Open captive portal authenticator window"
     @indicator_captive.signal_connect "activate" do
-      @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => 'http://httpbin.org')
+      @portal_authenticator.open_portal_authenticator_window(:keep_open => true, :uri => Netdiag::Config.test_url)
     end
     @indicator_captive.show
     @indicator_conninfo = Gtk::MenuItem.new :label => "Show connection informations"
@@ -235,7 +235,7 @@ class Netindic
           if @internet.is_captive?
             self.set_state_and_notify(STATE_ECAPTIVE)
             if !@indicator_captive_t.active? and !@portal_authenticator.is_disabled?
-              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => 'http://httpbin.org') end
+              Gtk.queue do @portal_authenticator.open_portal_authenticator_window(:uri => Netdiag::Config.test_url) end
             end
           else
             if @internet.diagnose < 50
