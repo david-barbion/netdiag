@@ -14,6 +14,8 @@ module Netdiag
     end
 
     def interface
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
+
       @vbox = Gtk::Box.new(:vertical)
       header_bar = Gtk::HeaderBar.new
       header_bar.set_title('Authentication needed')
@@ -63,7 +65,7 @@ module Netdiag
 
       header_bar.pack_end(pom_button)
 
-      @view_context = WebKit2Gtk::WebContext.new
+      @view_context = WebKit2Gtk::WebContext.new(ephemeral: true)
       @view_context.set_tls_errors_policy(WebKit2Gtk::TLSErrorsPolicy::IGNORE)
       @view = WebKit2Gtk::WebView.new(:context => @view_context)
       @vbox.pack_start(@view, :expand => true, :fill => true)
@@ -75,24 +77,25 @@ module Netdiag
 
       # stores URI when loading state changed
       # this permits to keep the redirection URL (ie, the captive portal URL)
-      @view.signal_connect('load-changed') do |web_view, load_event, _user_data|
-        @redirect_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::REDIRECTED
-        @last_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::FINISHED
-      end
+      #@view.signal_connect('load-changed') do |web_view, load_event, _user_data|
+      #  @redirect_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::REDIRECTED
+      #  @last_url = web_view.uri if load_event == WebKit2Gtk::LoadEvent::FINISHED
+      #end
 
       # intercept load errors, this can be caused by network problem,
       # bad response from captive portal
       # if such an error is catched, netdiag will try to reload the portal page
       # for RELOAD_MAX_TRIES
-      @view.signal_connect("load-failed") do |web_view, load_event, failing_uri, _error|
-        retry_load_portal
-      end
+      #@view.signal_connect("load-failed") do |_, _, failed_uri, _error|
+      #  retry_load_portal
+      #end
 
       hide_on_delete
     end
 
     # reload the current page
     def retry_load_portal
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       return false if @tries.zero?
       @tries -= 1
       @view.load_uri(@url)
@@ -100,6 +103,7 @@ module Netdiag
 
     # initiate a new load
     def load_portal(uri)
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       @url = uri
       @tries = RELOAD_MAX_TRIES
       @view.load_uri(uri)
