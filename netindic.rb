@@ -128,6 +128,7 @@ class Netindic
   def run
     $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
     Thread.new {
+      Thread.current[:name] = "polling"
       $logger.debug("entering polling thread")
       loop do
         begin
@@ -279,7 +280,11 @@ module Gtk
 	end
 end
 
+Thread.current[:name] = "main"
 $logger = Logger.new(STDOUT)
+$logger.formatter = proc do |severity, datetime, progname, msg|
+  "[#{datetime}] [th: #{Thread.current[:name]}] #{severity} #{msg}\n"
+end
 $logger.level = Logger::DEBUG
 $logger.debug('Program started')
 netindic = Netindic.new
