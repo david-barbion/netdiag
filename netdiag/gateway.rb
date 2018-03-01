@@ -6,10 +6,10 @@ module Netdiag
 
     def initialize(args={})
       @ping_count = args[:ping_count] ? args[:ping_count] : 5
-      @analysis = Hash.new
     end
   
     def prepare(gateway_list)
+      @analysis = Hash.new
       @have_ipv4 = false
       @have_ipv6 = false
       @ipv4_quality = 0
