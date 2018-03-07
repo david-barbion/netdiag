@@ -87,13 +87,16 @@ module Netdiag
     # options, but at the moment it's being used to allow per-environment
     # overrides in Rails
     def load!(filename, options = {})
-
+      $logger.debug("entering #{self.class.name}::#{__method__.to_s}")
       begin
         newsets = YAML::load_file(filename).deep_symbolize
         newsets = newsets[options[:env].to_sym] if \
                                                  options[:env] && \
                                                  newsets[options[:env].to_sym]
         deep_merge!(@_settings, newsets)
+        @_settings.each do |k,v|
+          $logger.debug("config key #{k}=#{v}")
+        end
       rescue Exception => e
         $stderr.puts "Couldn't load config file #{filename}: #{e.message}. Using defaults."
       end
