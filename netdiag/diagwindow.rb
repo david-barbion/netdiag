@@ -139,7 +139,7 @@ module Netdiag
         
         @gateway.prepare(@local.default_gateways)
         gateway_quality = @gateway.diagnose 
-        self.lan_status = @gateway.check_gateway_threshold
+        self.lan_status = !@gateway.check_gateway_threshold
         self.gw_diag = "#{@gateway.status}\nquality: #{gateway_quality}%"
         self.gw_diag_info = @gateway.message
 
