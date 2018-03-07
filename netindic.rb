@@ -225,7 +225,7 @@ class Netindic
       self.set_state_and_notify(STATE_ELOCAL)
     else 
       @gateway.prepare(@local.default_gateways)
-      if @gateway.diagnose < 50
+      if @gateway.check_gateway_threshold
         self.set_state_and_notify(STATE_EGATEWAY)
       else
         @dns.prepare

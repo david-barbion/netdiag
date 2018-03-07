@@ -132,25 +132,23 @@ module Netdiag
     def run_diagnosis
       Thread.new {
         Thread.current[:name] = "diagnose"
-      @local.prepare
-      @gateway.prepare(@local.default_gateways)
-      @dns.prepare
-      @internet.prepare
+        @local.prepare
+        @local.diagnose
+        self.local_diag = @local.message
+        self.local_diag_info = self.render_interface_info(@local.local_interfaces)
+        
+        @gateway.prepare(@local.default_gateways)
+        gateway_quality = @gateway.diagnose 
+        self.lan_status = @gateway.check_gateway_threshold
+        self.gw_diag = "#{@gateway.status}\nquality: #{gateway_quality}%"
+        self.gw_diag_info = @gateway.message
 
-      @local.diagnose
-      self.local_diag = @local.message
-      self.local_diag_info = self.render_interface_info(@local.local_interfaces)
-      
-      # TODO: 50 should be configurable
-      gateway_quality = @gateway.diagnose 
-      self.lan_status = gateway_quality >= 50 ? true : false
-      self.gw_diag = "#{@gateway.status}\nquality: #{gateway_quality}%"
-      self.gw_diag_info = @gateway.message
-
-      @dns.diagnose
-	    self.wan_status = @internet.diagnose >= 50 ? true : false
-      self.internet_diag = "#{@dns.status}\n#{@internet.status}"
-      self.internet_diag_info = "#{@dns.message}\n#{@internet.message}"
+        @dns.prepare
+        @dns.diagnose
+        @internet.prepare
+	      self.wan_status = @internet.diagnose >= 50 ? true : false
+        self.internet_diag = "#{@dns.status}\n#{@internet.status}"
+        self.internet_diag_info = "#{@dns.message}\n#{@internet.message}"
       }
     end
 

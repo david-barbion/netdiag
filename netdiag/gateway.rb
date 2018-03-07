@@ -37,6 +37,11 @@ module Netdiag
       return !@have_ipv6
     end
 
+    def check_gateway_threshold(threshold=50)
+      ((@ipv4_mandatory && @ipv6_mandatory) && diagnose <= threshold) ||
+      ((@ipv4_mandatory || @ipv6_mandatory) && diagnose <  threshold)
+    end
+
     def get_gw_quality(gw)
       @analysis[gw][:quality]
     end
@@ -85,12 +90,10 @@ module Netdiag
       else
         begin
           @analysis.each do |ip,res|
-            if (@ipv4_mandatory and ip =~ Resolv::IPv4::Regex) or (@ipv6_mandatory and ip =~ Resolv::IPv6::Regex)
-              if res[:rtt].nil?
-                message << (short==true ? "#{ip} failed" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})")
-              else
-                message << (short==true ? "#{ip} (quality: #{res[:quality].round(2)}%)" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)")
-              end
+            if res[:rtt].nil?
+              message << (short==true ? "#{ip} failed" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]})")
+            else
+              message << (short==true ? "#{ip} (quality: #{res[:quality].round(2)}%)" : "#{ip} (#{res[:count]-res[:failure]}/#{res[:count]}, rtt=#{res[:rtt].round(2)}ms, quality=#{res[:quality].round(2)}%)")
             end
           end
         rescue Exception => e
