@@ -17,7 +17,7 @@ require 'rubygems'
 require 'netdiag/portal'
 require 'appindicator.so'
 require 'netdiag/diagwindow'
-require 'libnotify'
+require 'netdiag/notify'
 require 'logger'
 
 STATE_OK=0
@@ -108,7 +108,7 @@ class Netindic
     @ai.set_icon_theme_path("#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}")
     @ai.set_icon("help_64")
 
-    Libnotify.icon_dirs << "#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}"
+    Netdiag::Notify.icon_dirs << "#{File.dirname(File.expand_path(__FILE__))}/static/#{Netdiag::Config.theme}"
 
     @last_state=-1
 
@@ -150,65 +150,71 @@ class Netindic
     case state
     when STATE_ELOCAL
       if @last_state != STATE_ELOCAL
-        Libnotify.show(:summary => "No routable address",
-                       :body => "No IP address on any interface, check network cable or wifi",
-                       :timeout => 2.5,
-                       :urgency => :critical,
-                       :icon_path => 'error_64.png')
+        Netdiag::Notify.send(
+          :summary => "No routable address",
+          :body    => "No IP address on any interface, check network cable or wifi",
+          :timeout => 2500,
+          :icon    => 'error_64.png'
+        )
         @last_state = STATE_ELOCAL
         $logger.error("Error code 1. No IP address on any interface")
         @ai.set_icon("error_64")
       end
     when STATE_EGATEWAY
       if @last_state != STATE_EGATEWAY
-        Libnotify.show(:summary => @gateway.status,
-                       :body => "#{@gateway.message}",
-                       :timeout => 2.5,
-                       :urgency => :critical,
-                       :icon_path => 'help_64.png')
+        Netdiag::Notify.send(
+          :summary => @gateway.status,
+          :body    => "#{@gateway.message}",
+          :timeout => 2500,
+          :icon    => 'help_64.png'
+        )
         @last_state = STATE_EGATEWAY
         $logger.error("Error code 2. Can't reach gateway: #{@gateway.message}")
         @ai.set_icon("help_64")
       end
     when STATE_EDNS
       if @last_state != STATE_EDNS
-        Libnotify.show(:summary => "DNS failure",
-                       :body => "The local resolver can't resolve internet names.\nError was #{@dns.error}.",
-                       :timeout => 2.5,
-                       :urgency => :critical,
-                       :icon_path => 'warning_64.png')
+        Netdiag::Notify.send(
+          :summary => "DNS failure",
+          :body    => "The local resolver can't resolve internet names.\nError was #{@dns.error}.",
+          :timeout => 200,
+          :icon    => 'warning_64.png'
+        )
         @last_state = STATE_EDNS
         $logger.error("Error code 3. DNS problem")
         @ai.set_icon("warning_64")
       end
     when STATE_EINTERNET
       if @last_state != STATE_EINTERNET
-        Libnotify.show(:summary => "Internet unreachable",
-                       :body => "Can't go outside local network, check filtering, gateways or cable/ADSL modem\n#{@internet.error}",
-                       :timeout => 2.5,
-                       :urgency => :normal,
-                       :icon_path => 'error_64.png')
+        Netdiag::Notify.send(
+          :summary => "Internet unreachable",
+          :body    => "Can't go outside local network, check filtering, gateways or cable/ADSL modem\n#{@internet.error}",
+          :timeout => 2500,
+          :icon    => 'error_64.png'
+        )
         @last_state = STATE_EINTERNET
         $logger.error("Error code 4. Internet unreachable")
         @ai.set_icon("error_64")
       end
     when STATE_ECAPTIVE
       if @last_state != STATE_ECAPTIVE
-        Libnotify.show(:summary => "Blocked by a captive portal",
-                       :body => "A captive portal blocks access to Internet",
-                       :timeout => 2.5,
-                       :urgency => :normal,
-                       :icon_path => 'forbidden_64.png')
+        Netdiag::Notify.send(
+          :summary => "Blocked by a captive portal",
+          :body    => "A captive portal blocks access to Internet",
+          :timeout => 2500,
+          :icon    => 'forbidden_64.png'
+        )
         @last_state = STATE_ECAPTIVE
         $logger.error("Error code 5. Blocked by a captive portal")
         @ai.set_icon("forbidden_64")
       end
     when STATE_OK
       if @last_state != STATE_OK
-        Libnotify.show(:summary => "Full network connectivity",
-                       :timeout => 2.5,
-                       :urgency => :low,
-                       :icon_path => "checkmark_64.png")
+        Netdiag::Notify.send(
+          summary: "Full network connectivity",
+          icon: 'checkmark_64.png',
+          timeout: 2500,
+        )
         @last_state = STATE_OK
         $logger.info("No error. All tests ok")
         @ai.set_icon("checkmark_64")

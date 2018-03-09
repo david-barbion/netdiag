@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 gem 'ruby-libappindicator'
 gem 'net-ping'
-gem 'libnotify'
 gem 'json'
 gem 'webkit2-gtk'
 gem 'ruby-dbus'
